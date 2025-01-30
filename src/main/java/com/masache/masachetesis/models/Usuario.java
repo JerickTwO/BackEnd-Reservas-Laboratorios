@@ -1,0 +1,63 @@
+package com.masache.masachetesis.models;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "usuarios")
+public class Usuario {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_user")
+    private Long idUser;
+
+    @Column(name = "username", nullable = false, length = 150, unique = true)
+    private String usuario;
+
+    @Column(name = "nombre_usuario", nullable = false, length = 50)
+    private String nombre;
+
+    @Column(name = "apellido_usuario", nullable = false, length = 50)
+    private String apellido;
+
+    @Column(name = "correo_usuario", nullable = false, length = 50, unique = true)
+    private String correo;
+
+    @Column(name = "contrasena_usuario", nullable = false, length = 150)
+    private String contrasena;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Roles> roles = new HashSet<>();
+
+    // 1: activo, 0: inactivo
+    @Column(name = "estado", nullable = false, columnDefinition = "boolean default true")
+    private Boolean estado;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Roles roles = (Roles) o;
+        return Objects.equals(nombre, roles.getNombre());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nombre);
+    }
+
+}
