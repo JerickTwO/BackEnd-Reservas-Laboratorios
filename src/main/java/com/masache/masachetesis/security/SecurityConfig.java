@@ -48,7 +48,6 @@ public class SecurityConfig {
             "/test/**",
             "/v3/api-docs",
             "saludar",
-            "carreras/**"
     };
 
     @Bean
@@ -61,7 +60,6 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(Customizer.withDefaults());
 
-        // Allow H2 console to load properly by configuring headers
         http.headers(headers -> headers
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin) // Allow H2 console in iframe
         );

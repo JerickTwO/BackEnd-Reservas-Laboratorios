@@ -24,8 +24,14 @@ public class PrimaryUser implements UserDetails {
     }
 
     public static PrimaryUser build(Usuario usuario) {
-        List<GrantedAuthority> authorities = usuario.getRoles().stream().map(rol -> new SimpleGrantedAuthority(rol.getNombre())).collect(Collectors.toList());
-        return new PrimaryUser(usuario.getIdUser(), usuario.getUsuario(), usuario.getContrasena(), authorities);
+        // Obtenemos el rol único del usuario y lo convertimos a GrantedAuthority.
+        GrantedAuthority authority = new SimpleGrantedAuthority(usuario.getRol().getNombre());
+        return new PrimaryUser(
+                usuario.getIdUser(),
+                usuario.getUsuario(),
+                usuario.getContrasena(),
+                List.of(authority)
+        );
     }
 
     @Override

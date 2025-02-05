@@ -1,6 +1,5 @@
 package com.masache.masachetesis.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,8 +38,9 @@ public class Usuario {
     @Column(name = "contrasena_usuario", nullable = false, length = 150)
     private String contrasena;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Roles> roles = new HashSet<>();
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "rol_id", nullable = false) // Define la columna de unión en la tabla "usuarios"
+    private Roles rol;
 
     // 1: activo, 0: inactivo
     @Column(name = "estado", nullable = false, columnDefinition = "boolean default true")
@@ -59,5 +59,6 @@ public class Usuario {
     public int hashCode() {
         return Objects.hash(nombre);
     }
+
 
 }

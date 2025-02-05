@@ -92,7 +92,6 @@ public class DocenteController {
             return ResponseEntity.notFound().build();
         }
     }
-    // Eliminar un docente por su ID
 
     // Método privado para validar y obtener un departamento
     private Departamento validarDepartamento(Long idDepartamento) {

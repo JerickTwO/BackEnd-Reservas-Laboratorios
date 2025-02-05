@@ -2,6 +2,7 @@ package com.masache.masachetesis.controller;
 
 import com.masache.masachetesis.dto.JsonResponseDto;
 import com.masache.masachetesis.dto.LoginDto;
+import com.masache.masachetesis.dto.RegisterDto;
 import com.masache.masachetesis.models.Usuario;
 import com.masache.masachetesis.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +60,18 @@ public class AuthController {
         } catch (Exception e) {
             log.error("Error en la autenticación: {}", e.getMessage());
             JsonResponseDto response = new JsonResponseDto(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error interno en la autenticación", null, null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    @PostMapping("/register")
+    public ResponseEntity<JsonResponseDto> register(@RequestBody RegisterDto registerRequest) {
+        log.info("Register request received for user: {}", registerRequest.getUsername());
+        try {
+            JsonResponseDto response = authService.registerUser(registerRequest);
+            return ResponseEntity.status(response.getCodigoHttp()).body(response);
+        } catch (Exception e) {
+            log.error("Error en el registro: {}", e.getMessage());
+            JsonResponseDto response = new JsonResponseDto(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error en el registro de usuario", null, null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
