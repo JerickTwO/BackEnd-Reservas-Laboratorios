@@ -1,6 +1,8 @@
 package com.masache.masachetesis.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 @Data
@@ -18,6 +20,8 @@ public class Materia {
 
     @Column(name = "nrc", nullable = false, unique = true)
     private String nrc;
+
+    private Integer creditos;
 
     @ManyToOne
     @JoinColumn(name = "id_docente", nullable = false)

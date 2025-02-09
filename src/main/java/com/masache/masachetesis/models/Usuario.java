@@ -42,6 +42,9 @@ public class Usuario {
     @JoinColumn(name = "rol_id", nullable = false) // Define la columna de unión en la tabla "usuarios"
     private Roles rol;
 
+    @Column(name = "primer_login", nullable = false, columnDefinition = "boolean default true")
+    private boolean primerLogin; // 1: primer login, 0: no es el primer login
+
     // 1: activo, 0: inactivo
     @Column(name = "estado", nullable = false, columnDefinition = "boolean default true")
     private Boolean estado;

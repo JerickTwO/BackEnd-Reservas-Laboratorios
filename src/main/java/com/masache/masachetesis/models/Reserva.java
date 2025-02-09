@@ -1,13 +1,22 @@
 package com.masache.masachetesis.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reservas")
 @Data
+@Builder
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class Reserva {
 
     @Id
@@ -17,10 +26,11 @@ public class Reserva {
     @Column(nullable = false)
     private String nombreCompleto; // Nombre completo de quien reserva
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String correo; // Correo electrónico del reservante
 
     @Column(nullable = false)
+    @Size(min = 10, max = 10)
     private String telefono; // Teléfono del reservante
 
     @Column(nullable = false)
@@ -40,6 +50,8 @@ public class Reserva {
     private String motivoReserva; // Motivo de la reserva
 
     @Column(nullable = false)
+    @Min(1)
+    @Max(35)
     private Integer cantidadParticipantes; // Cantidad de participantes
 
     @Column

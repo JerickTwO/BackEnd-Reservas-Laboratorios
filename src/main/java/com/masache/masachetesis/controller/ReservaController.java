@@ -1,14 +1,19 @@
 package com.masache.masachetesis.controller;
 
 import com.masache.masachetesis.models.Reserva;
+import com.masache.masachetesis.models.Usuario;
+import com.masache.masachetesis.repositories.UsuariosRepository;
+import com.masache.masachetesis.security.jwt.JwtProvider;
+import com.masache.masachetesis.service.MailService;
 import com.masache.masachetesis.service.ReservaService;
-import com.masache.masachetesis.service.EmailService;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("api/v1/reservas")
 public class ReservaController {
@@ -17,7 +22,12 @@ public class ReservaController {
     private ReservaService reservaService;
 
     @Autowired
-    private EmailService emailService; // Servicio de correo electrónico
+    private MailService mailService;
+    @Autowired
+    private JwtProvider jwtProvider;
+
+    @Autowired
+    private UsuariosRepository usuariosRepository;
 
     // Obtener todas las reservas
     @GetMapping
@@ -35,32 +45,23 @@ public class ReservaController {
 
     // Crear una nueva reserva
     @PostMapping
-    public ResponseEntity<Reserva> createReserva(@RequestBody Reserva reserva) {
-        Reserva nuevaReserva = reservaService.createReserva(reserva);
+    public ResponseEntity<Reserva> createReserva(@Valid @RequestBody Reserva reserva, @RequestHeader("Authorization") String token) {
+        String jwt = token.replace("Bearer ", "");
+        String username = jwtProvider.getNombreUsuarioFromToken(jwt);
+        Usuario usuario = usuariosRepository.findUsuarioByUsuarioAndEstadoTrue(username);
+        if (usuario == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
-        // Enviar correo al administrador
-        String correoAdmin = "fjmasache@espe.edu.ec";
-        String asunto = "Nueva Reserva Creada";
-        String mensaje = String.format(
-                "Una nueva reserva ha sido registrada:\n\n" +
-                        "Nombre: %s\nCorreo: %s\nTeléfono: %s\nLaboratorio: %s\nHora Inicio: %s\nHora Fin: %s\nMotivo: %s",
-                nuevaReserva.getNombreCompleto(),
-                nuevaReserva.getCorreo(),
-                nuevaReserva.getTelefono(),
-                nuevaReserva.getLaboratorio().getNombreLaboratorio(),
-                nuevaReserva.getHoraInicio(),
-                nuevaReserva.getHoraFin(),
-                nuevaReserva.getMotivoReserva()
-        );
-
-        emailService.enviarCorreo(correoAdmin, asunto, mensaje);
+       log.info("Usuario autenticado: " + usuario.getUsuario());
+        Reserva nuevaReserva = reservaService.createReserva(reserva, usuario);
 
         return ResponseEntity.ok(nuevaReserva);
     }
 
     // Actualizar una reserva existente
     @PutMapping("/{id}")
-    public ResponseEntity<Reserva> updateReserva(@PathVariable Long id, @RequestBody Reserva updatedReserva) {
+    public ResponseEntity<Reserva> updateReserva(@Valid @PathVariable Long id, @RequestBody Reserva updatedReserva) {
         try {
             return ResponseEntity.ok(reservaService.updateReserva(id, updatedReserva));
         } catch (RuntimeException e) {
@@ -70,12 +71,20 @@ public class ReservaController {
 
     // Cambiar el estado de una reserva
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<Reserva> updateEstadoReserva(@PathVariable Long id, @RequestBody Reserva.EstadoReserva estado) {
+    public ResponseEntity<Reserva> updateEstadoReserva( Long id,
+                                                       @RequestBody Reserva.EstadoReserva estado,
+                                                       @RequestHeader("Authorization") String token) {
+        String jwt = token.replace("Bearer ", "");
+        String username = jwtProvider.getNombreUsuarioFromToken(jwt);
+        Usuario usuario = usuariosRepository.findUsuarioByUsuarioAndEstadoTrue(username); //anyel
+        if (usuario == null) {
+            return ResponseEntity.badRequest().build();
+        }
         try {
             Reserva reserva = reservaService.getReservaById(id)
                     .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
             reserva.setEstado(estado);
-            return ResponseEntity.ok(reservaService.createReserva(reserva));
+            return ResponseEntity.ok(reservaService.createReserva(reserva, usuario));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

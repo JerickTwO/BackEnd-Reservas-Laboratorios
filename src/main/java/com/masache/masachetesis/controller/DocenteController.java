@@ -52,6 +52,7 @@ public class DocenteController {
 
             // Guardar el docente
             Docente savedDocente = docenteService.saveOrUpdateDocente(docente);
+
             return new ResponseEntity<>(savedDocente, HttpStatus.CREATED);
         } catch (Exception e) {
             // Manejar errores y devolver respuesta adecuada
