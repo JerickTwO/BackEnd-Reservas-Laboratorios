@@ -100,5 +100,6 @@ public class LaboratorioService {
         if (laboratorio.getCapacidad() == null || laboratorio.getCapacidad() <= 0) {
             throw new IllegalArgumentException("La capacidad del laboratorio debe ser un número positivo.");
         }
+
     }
 }

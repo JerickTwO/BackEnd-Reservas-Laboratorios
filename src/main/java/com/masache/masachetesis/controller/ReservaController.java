@@ -22,8 +22,6 @@ public class ReservaController {
     private ReservaService reservaService;
 
     @Autowired
-    private MailService mailService;
-    @Autowired
     private JwtProvider jwtProvider;
 
     @Autowired
@@ -76,7 +74,7 @@ public class ReservaController {
                                                        @RequestHeader("Authorization") String token) {
         String jwt = token.replace("Bearer ", "");
         String username = jwtProvider.getNombreUsuarioFromToken(jwt);
-        Usuario usuario = usuariosRepository.findUsuarioByUsuarioAndEstadoTrue(username); //anyel
+        Usuario usuario = usuariosRepository.findUsuarioByUsuarioAndEstadoTrue(username);
         if (usuario == null) {
             return ResponseEntity.badRequest().build();
         }

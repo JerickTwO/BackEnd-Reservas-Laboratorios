@@ -15,11 +15,7 @@ import java.util.Objects;
 @Builder
 public class Roles {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nombre;
     private String descripcion;
-
-
-
 }

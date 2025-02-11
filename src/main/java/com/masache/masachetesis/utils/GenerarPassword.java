@@ -4,11 +4,6 @@ import lombok.experimental.UtilityClass;
 
 import java.security.SecureRandom;
 
-/*
- * Author: Anyel EC
- * Github: https://github.com/Anyel-ec
- * Creation date: 08/02/2025
- */
 @UtilityClass
 public class GenerarPassword {
     public String generarPasswordAleatoria(int length) {

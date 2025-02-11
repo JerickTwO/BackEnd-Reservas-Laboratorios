@@ -54,8 +54,14 @@ public class ReservaService {
 
         // Verificar si el laboratorio existe y asignarlo
         if (reserva.getLaboratorio() != null && reserva.getLaboratorio().getIdLaboratorio() != null) {
-            reserva.setLaboratorio(laboratorioRepository.findById(reserva.getLaboratorio().getIdLaboratorio())
-                    .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado")));
+            Laboratorio laboratorio = laboratorioRepository.findById(reserva.getLaboratorio().getIdLaboratorio())
+                    .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
+
+            // Verificar capacidad del laboratorio antes de aceptar la reserva
+            if (reserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
+                throw new RuntimeException("Hay demasiados estudiantes, no se puede realizar la reserva");
+            }
+            reserva.setLaboratorio(laboratorio);
         }
 
         Reserva nuevaReserva = reservaRepository.save(reserva);

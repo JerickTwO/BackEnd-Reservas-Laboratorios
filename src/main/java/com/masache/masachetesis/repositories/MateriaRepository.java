@@ -18,11 +18,6 @@ public interface MateriaRepository extends JpaRepository<Materia, Long> {
      */
     List<Materia> findByNombreMateriaContainingIgnoreCase(String keyword);
 
-    /**
-     * Obtiene todas las materias con sus docentes asociados.
-     *
-     * @return Lista de materias con sus docentes.
-     */
-    @Query("SELECT m FROM Materia m JOIN FETCH m.docente")
-    List<Materia> findAllWithDocente();
+    boolean existsByNrc(String nrc);
+
 }
