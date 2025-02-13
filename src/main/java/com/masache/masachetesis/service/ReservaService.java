@@ -41,16 +41,24 @@ public class ReservaService {
 
     // Crear una nueva reserva
     public Reserva createReserva(Reserva reserva, Usuario usuario) {
+        // Validar que solo los ADMINISTRADORES pueden cambiar el estado a APROBADA o RECHAZADA
+        if (!"admin".equals(usuario.getRol().getNombre()) &&
+                (reserva.getEstado() == Reserva.EstadoReserva.APROBADA || reserva.getEstado() == Reserva.EstadoReserva.RECHAZADA)) {
+            throw new RuntimeException("No tienes permiso para aprobar o rechazar reservas.");
+        }
 
-        // Asignar automáticamente el nombre y apellido del usuario autenticado
-        reserva.setEstado(Reserva.EstadoReserva.PENDIENTE);
-        reserva.setNombreCompleto(usuario.getNombre() + " " + usuario.getApellido());
-        reserva.setCorreo(usuario.getCorreo());
-
-        // Establecer estado inicial como PENDIENTE si no está definido
-        if (reserva.getEstado() == null) {
+        // Si el usuario es un DOCENTE, forzamos el estado a PENDIENTE
+        if ("docente".equals(usuario.getRol().getNombre())) {
             reserva.setEstado(Reserva.EstadoReserva.PENDIENTE);
         }
+        log.info("El usuario logeado es: {}", usuario);
+
+        // Asignar automáticamente el nombre y apellido del usuario autenticado
+        reserva.setNombreCompleto(usuario.getNombre() + " " + usuario.getApellido());
+        log.info("El nombre completo del usuario es: {}", reserva.getNombreCompleto());
+        reserva.setCorreo(usuario.getCorreo());
+        log.info("El correo del usuario es: {}", reserva.getCorreo());
+
 
         // Verificar si el laboratorio existe y asignarlo
         if (reserva.getLaboratorio() != null && reserva.getLaboratorio().getIdLaboratorio() != null) {
@@ -75,6 +83,7 @@ public class ReservaService {
 
         return nuevaReserva;
     }
+
 
     // Actualizar una reserva existente
     public Reserva updateReserva(Long idReserva, Reserva updatedReserva) {

@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "reservas")
@@ -41,10 +42,11 @@ public class Reserva {
     private Laboratorio laboratorio; // Entidad Laboratorio
 
     @Column(nullable = false)
-    private LocalDateTime horaInicio; // Hora de inicio de la reserva
+    private LocalTime horaInicio; // Hora de inicio de la reserva
 
     @Column(nullable = false)
-    private LocalDateTime horaFin; // Hora de fin de la reserva
+    private LocalTime horaFin; // Hora de fin de la reserva
+
 
     @Column(nullable = false)
     private String motivoReserva; // Motivo de la reserva
@@ -63,7 +65,7 @@ public class Reserva {
 
     public enum EstadoReserva {
         PENDIENTE, // La reserva está pendiente de aprobación
-        ACEPTADA,  // La reserva ha sido aceptada
+        APROBADA,  // La reserva ha sido aceptada
         RECHAZADA  // La reserva ha sido rechazada
     }
 }

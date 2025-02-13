@@ -1,10 +1,9 @@
 package com.masache.masachetesis.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
-
-import java.util.Objects;
 
 @Entity
 @Data
@@ -18,4 +17,6 @@ public class Roles {
     private Long id;
     private String nombre;
     private String descripcion;
+
+
 }

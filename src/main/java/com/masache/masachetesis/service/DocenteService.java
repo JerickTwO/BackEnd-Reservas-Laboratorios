@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,15 +39,12 @@ public class DocenteService {
     @Transactional
     public Docente saveOrUpdateDocente(@Valid Docente docente) {
         try {
-            // Verificar si el correo del docente ya está registrado
             if (docenteRepository.existsByCorreoDocente(docente.getCorreoDocente())) {
                 throw new IllegalStateException("Ya existe un docente con este correo.");
             }
-
             if (docenteRepository.existsByIdInstitucional(docente.getIdInstitucional())) {
-                throw new IllegalStateException("Ya existe un docente con este id institucional.");
+                throw new IllegalStateException("Ya existe un docente con este DNI.");
             }
-
             if (docente.getIdDocente() != null && docente.getIdDocente() == 0) {
                 docente.setIdDocente(null);
             }
@@ -60,16 +58,15 @@ public class DocenteService {
 
             return savedDocente;
         } catch (Exception e) {
-            logger.error("Error al guardar el docente: " + e.getMessage());
+            System.err.println("Error al guardar el docente: " + e.getMessage());
             throw new RuntimeException("Error al registrar docente.", e);
         }
     }
 
-
     @Transactional
     protected void crearUsuarioParaDocente(Docente docente) {
         try {
-            if (usuariosRepository.existsByCorreo(docente.getCorreoDocente())) {
+            if (usuariosRepository.existsByUsuario(docente.getCorreoDocente())) {
                 throw new IllegalStateException("Ya existe un usuario con este correo.");
             }
 
@@ -89,19 +86,14 @@ public class DocenteService {
                     .estado(true)
                     .rol(rolDocente)
                     .build();
-
             usuariosRepository.save(usuario);
             mailService.sendNewUserEmail(usuario, passwordGenerada);
 
-        } catch (org.hibernate.exception.ConstraintViolationException e) {
-            logger.error("Error de duplicado en la base de datos: " + e.getMessage());
-            throw new IllegalStateException("Ya existe un docente con este correo.");
         } catch (Exception e) {
-            logger.error("Error al crear usuario para el docente: " + e.getMessage());
+            System.err.println("Error al crear usuario para el docente: " + e.getMessage());
             throw new RuntimeException("Error en la creación del usuario.", e);
         }
     }
-
 
 
     public void deleteDocente(Long id) {

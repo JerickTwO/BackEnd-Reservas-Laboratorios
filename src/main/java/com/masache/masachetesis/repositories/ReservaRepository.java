@@ -8,5 +8,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
-    // Aquí puedes agregar métodos personalizados si los necesitas
 }

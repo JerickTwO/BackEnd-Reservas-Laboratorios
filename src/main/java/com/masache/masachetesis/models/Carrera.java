@@ -20,4 +20,5 @@ public class Carrera {
 
     @Column(name = "nombre_carrera", nullable = false)
     private String nombreCarrera;
+
 }

@@ -56,6 +56,23 @@ public class HorarioController {
     }
 
 
+    /**
+     * Obtener horarios por docente.
+     */
+    @GetMapping("/docente/{idDocente}")
+    public ResponseEntity<List<Horario>> obtenerPorDocente(@PathVariable Long idDocente) {
+        List<Horario> horarios = horarioService.obtenerPorDocente(idDocente);
+        return ResponseEntity.ok(horarios);
+    }
+
+    /**
+     * Obtener horarios por materia.
+     */
+    @GetMapping("/materia/{idMateria}")
+    public ResponseEntity<List<Horario>> obtenerPorMateria(@PathVariable Long idMateria) {
+        List<Horario> horarios = horarioService.obtenerPorMateria(idMateria);
+        return ResponseEntity.ok(horarios);
+    }
 
     /**
      * Crear un nuevo horario.
@@ -64,22 +81,24 @@ public class HorarioController {
     public ResponseEntity<String> crearHorario(@RequestBody Horario horario) {
         try {
             horarioService.guardar(horario);
-            return ResponseEntity.ok("Horario registrado exitosamente."); // Estado 200 si es correcto
+            return ResponseEntity.ok("Horario registrado exitosamente.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage()); // Estado 400 si hay error
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
+    /**
+     * Actualizar un horario existente.
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<String> actualizarHorario(@PathVariable Long id, @RequestBody Horario horario) {
+    public ResponseEntity<String> actualizarHorario(@PathVariable Long id, @RequestBody Horario horarioActualizado) {
         try {
-            horarioService.actualizar(id, horario);
-            return ResponseEntity.ok("Horario actualizado correctamente."); // Estado 200 si es correcto
+            horarioService.actualizar(id, horarioActualizado);
+            return ResponseEntity.ok("Horario actualizado exitosamente.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage()); // Estado 400 si hay error
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
 
     /**
      * Eliminar un horario por ID.

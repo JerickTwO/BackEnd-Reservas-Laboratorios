@@ -44,6 +44,7 @@ public class ReservaController {
     // Crear una nueva reserva
     @PostMapping
     public ResponseEntity<Reserva> createReserva(@Valid @RequestBody Reserva reserva, @RequestHeader("Authorization") String token) {
+        log.info("Entro a crear reserva");
         String jwt = token.replace("Bearer ", "");
         String username = jwtProvider.getNombreUsuarioFromToken(jwt);
         Usuario usuario = usuariosRepository.findUsuarioByUsuarioAndEstadoTrue(username);
@@ -53,7 +54,7 @@ public class ReservaController {
 
        log.info("Usuario autenticado: " + usuario.getUsuario());
         Reserva nuevaReserva = reservaService.createReserva(reserva, usuario);
-
+        log.info("Reserva creada: " + nuevaReserva);
         return ResponseEntity.ok(nuevaReserva);
     }
 
