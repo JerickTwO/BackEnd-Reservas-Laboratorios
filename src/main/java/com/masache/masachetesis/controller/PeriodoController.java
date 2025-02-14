@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/periodos")
+@RequestMapping("/api/v1/periodos")
 public class PeriodoController {
 
     private final PeriodoService periodoService;
