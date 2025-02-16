@@ -35,74 +35,18 @@ public class HorarioController {
         return horario.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * Obtener horarios por laboratorio y día.
-     */
-    @GetMapping("/laboratorio/{idLaboratorio}/{dia}")
-    public ResponseEntity<List<Horario>> obtenerPorLaboratorioYDia(
-            @PathVariable Long idLaboratorio,
-            @PathVariable String dia) {
-
-        try {
-            // Convertir el String a Enum
-            DiaEnum diaEnum = DiaEnum.valueOf(dia.toUpperCase());
-
-            // Obtener horarios filtrados por laboratorio y día
-            List<Horario> horarios = horarioService.obtenerPorLaboratorioYDia(idLaboratorio, diaEnum);
-            return ResponseEntity.ok(horarios);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null); // Devuelve error si el día no es válido
-        }
-    }
 
 
-    /**
-     * Obtener horarios por docente.
-     */
-    @GetMapping("/docente/{idDocente}")
-    public ResponseEntity<List<Horario>> obtenerPorDocente(@PathVariable Long idDocente) {
-        List<Horario> horarios = horarioService.obtenerPorDocente(idDocente);
+
+
+
+
+
+    @GetMapping("/aprobadas")
+    public ResponseEntity<List<Horario>> obtenerHorariosConReservaAprobada() {
+        List<Horario> horarios = horarioService.obtenerHorariosConReservaAprobada();
         return ResponseEntity.ok(horarios);
     }
-
-    /**
-     * Obtener horarios por materia.
-     */
-    @GetMapping("/materia/{idMateria}")
-    public ResponseEntity<List<Horario>> obtenerPorMateria(@PathVariable Long idMateria) {
-        List<Horario> horarios = horarioService.obtenerPorMateria(idMateria);
-        return ResponseEntity.ok(horarios);
-    }
-
-    /**
-     * Crear un nuevo horario.
-     */
-    @PostMapping
-    public ResponseEntity<String> crearHorario(@RequestBody Horario horario) {
-        try {
-            horarioService.guardar(horario);
-            return ResponseEntity.ok("Horario registrado exitosamente.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    /**
-     * Actualizar un horario existente.
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<String> actualizarHorario(@PathVariable Long id, @RequestBody Horario horarioActualizado) {
-        try {
-            horarioService.actualizar(id, horarioActualizado);
-            return ResponseEntity.ok("Horario actualizado exitosamente.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    /**
-     * Eliminar un horario por ID.
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminarHorario(@PathVariable Long id) {
         try {

@@ -9,8 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "reservas")
@@ -22,31 +22,35 @@ public class Reserva {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_reserva")
     private Long idReserva; // ID único para cada reserva
 
     @Column(nullable = false)
     private String nombreCompleto; // Nombre completo de quien reserva
 
     @Column(nullable = false)
-    private String correo; // Correo electrónico del reservante
+    private String correo;
 
     @Column(nullable = false)
     @Size(min = 10, max = 10)
-    private String telefono; // Teléfono del reservante
+    private String telefono;
 
     @Column(nullable = false)
-    private String ocupacionLaboral; // Ocupación laboral del reservante
+    private String ocupacionLaboral;
 
     @ManyToOne
-    @JoinColumn(name = "id_laboratorio", nullable = false) // Relación con la tabla laboratorios
-    private Laboratorio laboratorio; // Entidad Laboratorio
+    @JoinColumn(name = "id_laboratorio", nullable = false)
+    private Laboratorio laboratorio;
 
     @Column(nullable = false)
-    private LocalTime horaInicio; // Hora de inicio de la reserva
+    private LocalTime horaInicio;
 
     @Column(nullable = false)
-    private LocalTime horaFin; // Hora de fin de la reserva
+    private LocalTime horaFin;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DiaEnum dia;
 
     @Column(nullable = false)
     private String motivoReserva; // Motivo de la reserva

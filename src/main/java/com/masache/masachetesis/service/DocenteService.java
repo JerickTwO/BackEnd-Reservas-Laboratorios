@@ -77,7 +77,7 @@ public class DocenteService {
                     .orElseThrow(() -> new IllegalArgumentException("Rol de Docente no encontrado"));
 
             Usuario usuario = Usuario.builder()
-                    .usuario(docente.getCorreoDocente())
+                    .usuario(docente.getIdInstitucional())
                     .nombre(docente.getNombreDocente())
                     .apellido(docente.getApellidoDocente())
                     .correo(docente.getCorreoDocente())

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -12,27 +13,11 @@ import java.time.LocalTime;
 public class Horario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DiaEnum dia; // Ahora usa el enum directamente
-
-    @Column(nullable = false)
-    private LocalTime horaInicio; // Maneja horas correctamente con LocalTime
-
-    @Column(nullable = false)
-    private LocalTime horaFin;
+    @Column(name = "id_horario", unique = true, nullable = false)
+    private Long idHorario;
 
     @ManyToOne
-    @JoinColumn(name = "materia_id", nullable = false)
-    private Materia materia;
+    @JoinColumn(name = "id_reserva")
+    private Reserva reserva;
 
-    @ManyToOne
-    @JoinColumn(name = "docente_id", nullable = false)
-    private Docente docente;
-
-    @ManyToOne
-    @JoinColumn(name = "laboratorio_id", nullable = false)
-    private Laboratorio laboratorio;
 }

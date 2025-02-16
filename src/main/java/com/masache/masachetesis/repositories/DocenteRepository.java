@@ -14,8 +14,9 @@ public interface DocenteRepository extends JpaRepository<Docente, Long> {
     @Query("SELECT d FROM Docente d LEFT JOIN FETCH d.departamento")
     List<Docente> findAllWithDepartamento();
 
+    Docente findByCorreoDocente(String correoDocente);
+
     boolean existsByCorreoDocente(String correoDocente);
     boolean existsByIdInstitucional(String idInstitucional);
-
 }
 
