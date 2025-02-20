@@ -24,12 +24,16 @@ public class LaboratorioService {
         return laboratorioRepository.findAll();
     }
 
-    /**
-     * Guardar o actualizar un laboratorio.
-     * Si el ID es null o menor o igual a 0, se crea un nuevo laboratorio.
-     */
     public Laboratorio saveOrUpdateLaboratorio(Laboratorio laboratorio) {
         validarLaboratorio(laboratorio);
+
+        // Asignar franjas horarias predeterminadas si no se proporcionan
+        if (laboratorio.getFranjasHorario() == null || laboratorio.getFranjasHorario().isEmpty()) {
+            laboratorio.setFranjasHorario(List.of("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"));
+        }
+        if (laboratorio.getDiasHorario() == null || laboratorio.getDiasHorario().isEmpty()) {
+            laboratorio.setDiasHorario(List.of("LUNES", "MARTES", "MIERCOLES", "JUEVES","VIERNES"));
+        }
 
         if (laboratorio.getIdLaboratorio() == null || laboratorio.getIdLaboratorio() <= 0) {
             // Creación de un nuevo laboratorio

@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -105,14 +106,13 @@ public class Inicializador implements CommandLineRunner {
             log.info("Administrador Ana López creado.");
         }
 
-        // Crear laboratorios si no existen
         List<Laboratorio> laboratorios = List.of(
-                new Laboratorio(null, "LAB-01", "BLOQUE A", 32),
-                new Laboratorio(null, "LAB-02", "BLOQUE A", 32),
-                new Laboratorio(null, "LAB-03", "BLOQUE A", 32),
-                new Laboratorio(null, "LAB-04", "BLOQUE A", 32),
-                new Laboratorio(null, "LAB-05", "BLOQUE B", 20),
-                new Laboratorio(null, "LAB-06", "BLOQUE B", 20)
+                new Laboratorio(null, "LAB-01", "BLOQUE A", 32, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-02", "BLOQUE A", 32, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-03", "BLOQUE A", 32, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-04", "BLOQUE A", 32, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-05", "BLOQUE B", 20, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-06", "BLOQUE B", 20, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES"))
         );
 
         List<Laboratorio> newLaboratorios = laboratorios.stream()

@@ -1,9 +1,11 @@
 package com.masache.masachetesis.service;
 
+import com.masache.masachetesis.models.Horario;
 import com.masache.masachetesis.models.Laboratorio;
 import com.masache.masachetesis.models.Reserva;
 import com.masache.masachetesis.models.Usuario;
 import com.masache.masachetesis.repositories.AdministradorRepository;
+import com.masache.masachetesis.repositories.HorarioRepository;
 import com.masache.masachetesis.repositories.LaboratorioRepository;
 import com.masache.masachetesis.repositories.ReservaRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,9 @@ public class ReservaService {
 
     @Autowired
     private MailService mailService;
+
+    @Autowired
+    private HorarioRepository horarioRepository;
 
     // Obtener todas las reservas
     public List<Reserva> getAllReservas() {
@@ -100,7 +105,19 @@ public class ReservaService {
                         .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
                 reserva.setLaboratorio(laboratorio);
             }
+            log.info("Estado de la reserva: {}", updatedReserva.getEstado());
 
+            if (Reserva.EstadoReserva.APROBADA.equals(updatedReserva.getEstado())) {
+                // Crear un nuevo horario y asignarle la reserva aprobada
+                Horario horario = new Horario();
+                horario.setReserva(reserva);
+
+                // Guardar el horario en la base de datos
+                horarioRepository.save(horario);
+                log.info("Horario creado para la reserva con ID: {}", updatedReserva.getIdReserva());
+            } else {
+                log.warn("La reserva no está aprobada, no se creará el horario.{}",updatedReserva.getEstado());
+            }
             reserva.setHoraInicio(updatedReserva.getHoraInicio());
             reserva.setHoraFin(updatedReserva.getHoraFin());
             reserva.setMotivoReserva(updatedReserva.getMotivoReserva());
@@ -111,6 +128,7 @@ public class ReservaService {
             return reservaRepository.save(reserva);
         }).orElseThrow(() -> new RuntimeException("Reserva no encontrada con ID: " + idReserva));
     }
+
 
     // Eliminar una reserva por ID
     public void deleteReserva(Long idReserva) {
