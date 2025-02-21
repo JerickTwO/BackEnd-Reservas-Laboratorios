@@ -8,7 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -72,4 +75,13 @@ public class Reserva {
         APROBADA,  // La reserva ha sido aceptada
         RECHAZADA  // La reserva ha sido rechazada
     }
+    // Fechas de creación y actualización
+    @CreationTimestamp
+    @Column(name = "creacion", updatable = false)
+    private LocalDateTime fechaCreacion; // Fecha de creación
+
+    @UpdateTimestamp
+    @Column(name = "actualizacion")
+    private LocalDateTime fechaActualizacion; // Fecha de última actualización
+
 }

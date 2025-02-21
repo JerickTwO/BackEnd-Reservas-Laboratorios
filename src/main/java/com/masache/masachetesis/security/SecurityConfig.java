@@ -47,7 +47,6 @@ public class SecurityConfig {
             "/api/v1/install/**",
             "/test/**",
             "/v3/api-docs",
-            "saludar",
     };
 
     @Bean

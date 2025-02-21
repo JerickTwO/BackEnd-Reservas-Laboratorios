@@ -39,12 +39,7 @@ public class DocenteService {
     @Transactional
     public Docente saveOrUpdateDocente(@Valid Docente docente) {
         try {
-            if (docenteRepository.existsByCorreoDocente(docente.getCorreoDocente())) {
-                throw new IllegalStateException("Ya existe un docente con este correo.");
-            }
-            if (docenteRepository.existsByIdInstitucional(docente.getIdInstitucional())) {
-                throw new IllegalStateException("Ya existe un docente con este DNI.");
-            }
+
             if (docente.getIdDocente() != null && docente.getIdDocente() == 0) {
                 docente.setIdDocente(null);
             }
@@ -77,7 +72,7 @@ public class DocenteService {
                     .orElseThrow(() -> new IllegalArgumentException("Rol de Docente no encontrado"));
 
             Usuario usuario = Usuario.builder()
-                    .usuario(docente.getIdInstitucional())
+                    .usuario(docente.getCorreoDocente())
                     .nombre(docente.getNombreDocente())
                     .apellido(docente.getApellidoDocente())
                     .correo(docente.getCorreoDocente())

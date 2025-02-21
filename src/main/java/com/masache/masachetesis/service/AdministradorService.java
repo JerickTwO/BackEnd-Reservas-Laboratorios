@@ -35,7 +35,12 @@ public class AdministradorService {
         return administradorRepository.findById(id);
     }
 
+    @Transactional
     public Administrador saveOrUpdateAdministrador(@Valid Administrador administrador) {
+
+        if (administrador.getIdAdministrador() != null && administrador.getIdAdministrador() == 0) {
+            administrador.setIdAdministrador(null);
+        }
         boolean nuevoRegistro = administrador.getIdAdministrador() == null;
         Administrador savedAdministrador = administradorRepository.save(administrador);
 
@@ -72,7 +77,6 @@ public class AdministradorService {
             mailService.sendNewUserEmail(usuario, passwordGenerada);
 
         } catch (Exception e) {
-            System.err.println("Error al crear usuario para el administrador: " + e.getMessage());
             throw new RuntimeException("Error en la creación del usuario.", e);
         }
     }

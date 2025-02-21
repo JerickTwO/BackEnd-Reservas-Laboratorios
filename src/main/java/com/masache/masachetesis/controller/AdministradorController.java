@@ -39,9 +39,9 @@ public class AdministradorController {
 
     // Crear un nuevo docente
     @PostMapping
-    public ResponseEntity<Administrador> createAdministrador(@Validated @RequestBody Administrador docente) {
+    public ResponseEntity<Administrador> createAdministrador(@Validated @RequestBody Administrador administrador) {
         try {
-            Administrador savedAdministrador = administradorService.saveOrUpdateAdministrador(docente);
+            Administrador savedAdministrador = administradorService.saveOrUpdateAdministrador(administrador);
             return new ResponseEntity<>(savedAdministrador, HttpStatus.CREATED);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);

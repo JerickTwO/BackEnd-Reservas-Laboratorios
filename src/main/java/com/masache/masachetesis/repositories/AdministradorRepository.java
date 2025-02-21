@@ -11,6 +11,7 @@ public interface AdministradorRepository extends JpaRepository<Administrador, Lo
     // Método para verificar si existe un administrador por correo
     boolean existsByCorreoAdministrador(String correoAdministrador);
 
+    boolean existsByIdInstitucional(String idInstitucional);
     // Puedes agregar más métodos si es necesario, por ejemplo, buscar por ID institucional
     Optional<Administrador> findByIdInstitucional(String idInstitucional);
 }
