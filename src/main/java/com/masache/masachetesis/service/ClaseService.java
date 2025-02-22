@@ -1,9 +1,6 @@
 package com.masache.masachetesis.service;
 
-import com.masache.masachetesis.models.Clase;
-import com.masache.masachetesis.models.Docente;
-import com.masache.masachetesis.models.Materia;
-import com.masache.masachetesis.models.Periodo;
+import com.masache.masachetesis.models.*;
 import com.masache.masachetesis.repositories.ClaseRepository;
 import com.masache.masachetesis.repositories.DocenteRepository;
 import com.masache.masachetesis.repositories.MateriaRepository;
@@ -104,7 +101,7 @@ public class ClaseService {
             clase.setMateria(materia);
             clase.setDocente(docente);
             clase.setPeriodo(periodo);
-
+            clase.setTipoEnum(TipoEnum.CLASE);
             // Verificar si la clase ya existe
             Optional<Clase> claseExistente = claseRepository.findByMateria_IdMateriaAndDocente_IdDocenteAndPeriodo_IdPeriodo(
                     materia.getIdMateria(), docente.getIdDocente(), periodo.getIdPeriodo());

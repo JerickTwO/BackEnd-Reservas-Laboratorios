@@ -29,7 +29,7 @@ public class LaboratorioService {
 
         // Asignar franjas horarias predeterminadas si no se proporcionan
         if (laboratorio.getFranjasHorario() == null || laboratorio.getFranjasHorario().isEmpty()) {
-            laboratorio.setFranjasHorario(List.of("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"));
+            laboratorio.setFranjasHorario(List.of("07:00-08:00", "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00"));
         }
         if (laboratorio.getDiasHorario() == null || laboratorio.getDiasHorario().isEmpty()) {
             laboratorio.setDiasHorario(List.of("LUNES", "MARTES", "MIERCOLES", "JUEVES","VIERNES"));

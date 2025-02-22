@@ -13,23 +13,22 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 
-@Entity
-@Table(name = "reservas")
 @Data
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "reservas")
 public class Reserva {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_reserva")
-    private Long idReserva; // ID único para cada reserva
+    private Long idReserva;
 
     @Column(nullable = false)
-    private String nombreCompleto; // Nombre completo de quien reserva
+    private String nombreCompleto;
 
     @Column(nullable = false)
     private String correo;
@@ -75,6 +74,10 @@ public class Reserva {
         APROBADA,  // La reserva ha sido aceptada
         RECHAZADA  // La reserva ha sido rechazada
     }
+    @Enumerated(EnumType.STRING) // Se almacena como texto en la BD
+    @Column(name = "tipo", columnDefinition = "VARCHAR(255) DEFAULT 'RESERVA'")
+    private TipoEnum tipoEnum;
+
     // Fechas de creación y actualización
     @CreationTimestamp
     @Column(name = "creacion", updatable = false)

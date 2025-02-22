@@ -29,7 +29,6 @@ public class Inicializador implements CommandLineRunner {
     @Transactional(rollbackFor = Exception.class)
     public void run(String... args) throws Exception {
         log.info("Verificando e insertando parámetros de sistema si no existen...");
-        // Verificar y agregar roles
         if (!rolesRepository.existsById(1L)) {
             rolesRepository.save(new Roles(1L, "admin", "Rol de administrador"));
         }
@@ -42,7 +41,7 @@ public class Inicializador implements CommandLineRunner {
 
         // Crear usuarios
         List<Usuario> usuarios = List.of(
-                new Usuario(null, "admin", "Ana", "López", "ana.lopez@admin.com", "$2a$12$PgD/fKcNC46SjVLzhR3CdeEDj9UYvM.pvJ2lkvjDQqOMLLRocAGDW", adminRole, true, true),
+                new Usuario(null, "admin", "Ana", "López", "jerickjjtm774@gmail.com", "$2a$12$PgD/fKcNC46SjVLzhR3CdeEDj9UYvM.pvJ2lkvjDQqOMLLRocAGDW", adminRole, true, true),
                 new Usuario(null, "L123456789", "Juan", "Pérez", "juan.perez@escuela.com", "$2a$12$.5mrqMQIp5/uqvjwhhY86OeraRv3sDVE2S9ga/ovR4joA02krE3rC", docenteRole, true, true)
         );
 
@@ -107,12 +106,12 @@ public class Inicializador implements CommandLineRunner {
         }
 
         List<Laboratorio> laboratorios = List.of(
-                new Laboratorio(null, "LAB-01", "BLOQUE A", 32, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
-                new Laboratorio(null, "LAB-02", "BLOQUE A", 32, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
-                new Laboratorio(null, "LAB-03", "BLOQUE A", 32, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
-                new Laboratorio(null, "LAB-04", "BLOQUE A", 32, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
-                new Laboratorio(null, "LAB-05", "BLOQUE B", 20, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
-                new Laboratorio(null, "LAB-06", "BLOQUE B", 20, Arrays.asList("07:00-09:00", "09:00-11:00", "11:00-13:00", "13:30-15:30"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES"))
+                new Laboratorio(null, "LAB-01", "BLOQUE A", 32, Arrays.asList("07:00-08:00", "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-02", "BLOQUE A", 32, Arrays.asList("07:00-08:00", "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-03", "BLOQUE A", 32, Arrays.asList("07:00-08:00", "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-04", "BLOQUE A", 32, Arrays.asList("07:00-08:00", "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-05", "BLOQUE B", 20, Arrays.asList("07:00-08:00", "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES")),
+                new Laboratorio(null, "LAB-06", "BLOQUE B", 20, Arrays.asList("07:00-08:00", "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00"),Arrays.asList("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES"))
         );
 
         List<Laboratorio> newLaboratorios = laboratorios.stream()

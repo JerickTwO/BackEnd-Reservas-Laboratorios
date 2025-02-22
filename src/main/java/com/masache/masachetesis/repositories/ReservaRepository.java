@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     List<Reserva> findByCorreo(String correo);
-
+    List<Reserva> findByEstado(Reserva.EstadoReserva estado);
 }
