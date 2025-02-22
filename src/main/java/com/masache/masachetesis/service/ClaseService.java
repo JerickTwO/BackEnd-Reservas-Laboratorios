@@ -76,10 +76,10 @@ public class ClaseService {
      */
     public Clase guardar(Clase clase) {
         try {
-            logger.info("Intentando guardar una nueva clase con Materia ID: {}, Docente ID: {}, Periodo ID: {}",
-                    clase.getMateria().getIdMateria(), clase.getDocente().getIdDocente(), clase.getPeriodo().getIdPeriodo());
+            logger.info("Intentando guardar una nueva clase con Materia ID: {}, Docente ID: {}",
+                    clase.getMateria().getIdMateria(), clase.getDocente().getIdDocente());
 
-            // Verificar existencia de Materia, Docente y Periodo
+            // Verificar existencia de Materia y Docente
             Materia materia = materiaRepository.findById(clase.getMateria().getIdMateria())
                     .orElseThrow(() -> {
                         logger.error("La materia con ID {} no existe", clase.getMateria().getIdMateria());
@@ -92,31 +92,30 @@ public class ClaseService {
                         return new IllegalArgumentException("El docente con el ID proporcionado no existe.");
                     });
 
-            Periodo periodo = periodoRepository.findById(clase.getPeriodo().getIdPeriodo())
-                    .orElseThrow(() -> {
-                        logger.error("El periodo con ID {} no existe", clase.getPeriodo().getIdPeriodo());
-                        return new IllegalArgumentException("El periodo con el ID proporcionado no existe.");
-                    });
+            // Buscar el periodo activo
+            List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
+            if (periodosActivos.isEmpty()) {
+                logger.error("No hay periodos activos en el sistema");
+                throw new IllegalArgumentException("No hay periodos activos.");
+            }
 
-            clase.setMateria(materia);
-            clase.setDocente(docente);
-            clase.setPeriodo(periodo);
-            clase.setTipoEnum(TipoEnum.CLASE);
+            Periodo periodoActivo = periodosActivos.get(0); // Suponiendo que solo hay un periodo activo a la vez
+            clase.setPeriodo(periodoActivo);
+
             // Verificar si la clase ya existe
             Optional<Clase> claseExistente = claseRepository.findByMateria_IdMateriaAndDocente_IdDocenteAndPeriodo_IdPeriodo(
-                    materia.getIdMateria(), docente.getIdDocente(), periodo.getIdPeriodo());
+                    materia.getIdMateria(), docente.getIdDocente(), periodoActivo.getIdPeriodo());
 
             if (claseExistente.isPresent()) {
                 logger.error("La clase ya existe en el sistema: Materia ID: {}, Docente ID: {}, Periodo ID: {}",
-                        materia.getIdMateria(), docente.getIdDocente(), periodo.getIdPeriodo());
+                        materia.getIdMateria(), docente.getIdDocente(), periodoActivo.getIdPeriodo());
                 throw new IllegalArgumentException("La clase ya existe en este periodo con este docente y materia.");
             }
 
             logger.info("Clase guardada exitosamente");
             return claseRepository.save(clase);
-        }
-        catch (Exception e) {
-            logger.error("Error al guardar la clase: "+  e);
+        } catch (Exception e) {
+            logger.error("Error al guardar la clase: " + e);
             throw new IllegalArgumentException("Error al guardar la clase.");
         }
     }
@@ -136,27 +135,32 @@ public class ClaseService {
                     return new IllegalArgumentException("La clase con el ID proporcionado no existe.");
                 });
 
-        // Verificar existencia de Materia, Docente y Periodo
+        // Verificar existencia de Materia y Docente
         Materia materia = materiaRepository.findById(claseActualizada.getMateria().getIdMateria())
                 .orElseThrow(() -> {
                     logger.error("La materia con ID {} no existe", claseActualizada.getMateria().getIdMateria());
                     return new IllegalArgumentException("La materia con el ID proporcionado no existe.");
                 });
+
         Docente docente = docenteRepository.findById(claseActualizada.getDocente().getIdDocente())
                 .orElseThrow(() -> {
                     logger.error("El docente con ID {} no existe", claseActualizada.getDocente().getIdDocente());
                     return new IllegalArgumentException("El docente con el ID proporcionado no existe.");
                 });
-        Periodo periodo = periodoRepository.findById(claseActualizada.getPeriodo().getIdPeriodo())
-                .orElseThrow(() -> {
-                    logger.error("El periodo con ID {} no existe", claseActualizada.getPeriodo().getIdPeriodo());
-                    return new IllegalArgumentException("El periodo con el ID proporcionado no existe.");
-                });
+
+        // Buscar el periodo activo
+        List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
+        if (periodosActivos.isEmpty()) {
+            logger.error("No hay periodos activos en el sistema");
+            throw new IllegalArgumentException("No hay periodos activos.");
+        }
+
+        Periodo periodoActivo = periodosActivos.get(0); // Suponiendo que solo hay un periodo activo a la vez
+        claseActualizada.setPeriodo(periodoActivo);
 
         // Actualizar los datos de la clase
         clase.setMateria(materia);
         clase.setDocente(docente);
-        clase.setPeriodo(periodo);
 
         logger.info("Clase actualizada exitosamente");
         return claseRepository.save(clase);
@@ -170,7 +174,7 @@ public class ClaseService {
         logger.info("Intentando eliminar clase con ID: {}", id);
 
         if (!claseRepository.existsById(id)) {
-            logger.error("La clase con ID {} no existe", id);
+                logger.error("La clase con ID {} no existe", id);
             throw new IllegalArgumentException("La clase con el ID proporcionado no existe.");
         }
         claseRepository.deleteById(id);

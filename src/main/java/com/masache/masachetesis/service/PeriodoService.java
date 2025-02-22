@@ -12,63 +12,60 @@ import java.util.Optional;
 public class PeriodoService {
 
     private final PeriodoRepository periodoRepository;
-
     public PeriodoService(PeriodoRepository periodoRepository) {
         this.periodoRepository = periodoRepository;
     }
-
-    /**
-     * Obtener todos los periodos.
-     */
     public List<Periodo> obtenerTodos() {
         return periodoRepository.findAll();
     }
-
-    /**
-     * Obtener un periodo por ID.
-     */
     public Optional<Periodo> obtenerPorId(Long id) {
         return periodoRepository.findById(id);
     }
 
-    /**
-     * Guardar un nuevo periodo.
-     */
     @Transactional
     public Periodo guardar(Periodo periodo) {
-        // Verifica si el periodo con el mismo nombre ya existe
         if (periodoRepository.existsByNombrePeriodo(periodo.getNombrePeriodo())) {
-            throw new IllegalArgumentException("El periodo ya existe.");
+            throw new IllegalArgumentException("El nombre del periodo ya está en uso.");
         }
-        // Guarda el nuevo periodo
         return periodoRepository.save(periodo);
     }
 
-    /**
-     * Actualizar un periodo existente.
-     */
     @Transactional
     public Periodo actualizar(Long id, Periodo periodoActualizado) {
-        // Verifica si el periodo existe
         if (!periodoRepository.existsById(id)) {
             throw new IllegalArgumentException("El periodo con el ID proporcionado no existe.");
         }
-        // Establece el ID del periodo actualizado
         periodoActualizado.setIdPeriodo(id);
-        // Actualiza el periodo
+        periodoActualizado.setFechaInicio(periodoActualizado.getFechaInicio());
+        periodoActualizado.setFechaFin(periodoActualizado.getFechaFin());
+        periodoActualizado.setEstado(false);
         return periodoRepository.save(periodoActualizado);
     }
 
-    /**
-     * Eliminar un periodo por ID.
-     */
+    @Transactional
+    public Periodo cambiarEstado(Long id, boolean estado) {
+        Optional<Periodo> periodoOpt = periodoRepository.findById(id);
+        if (periodoOpt.isPresent()) {
+            Periodo periodo = periodoOpt.get();
+            if (estado) {
+                List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
+                for (Periodo p : periodosActivos) {
+                    p.setEstado(false);
+                    periodoRepository.save(p);
+                }
+            }
+            periodo.setEstado(estado);
+            return periodoRepository.save(periodo);
+        } else {
+            throw new IllegalArgumentException("El periodo con el ID proporcionado no existe.");
+        }
+    }
+
     @Transactional
     public void eliminar(Long id) {
-        // Verifica si el periodo existe
         if (!periodoRepository.existsById(id)) {
             throw new IllegalArgumentException("El periodo con el ID proporcionado no existe.");
         }
-        // Elimina el periodo
         periodoRepository.deleteById(id);
     }
 }

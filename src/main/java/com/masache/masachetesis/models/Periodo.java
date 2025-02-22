@@ -1,30 +1,39 @@
-package com.masache.masachetesis.models;
+    package com.masache.masachetesis.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+    import lombok.AllArgsConstructor;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
 
-import jakarta.persistence.*;
+    import jakarta.persistence.*;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-@Entity
-@Table(name = "periodos")
-public class Periodo {
+    import java.time.LocalDate;
+    import java.time.LocalTime;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_periodo")
-    private Long idPeriodo;
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    @Entity
+    @Table(name = "periodos")
+    public class Periodo {
 
-    @Column(name = "nombre_periodo", nullable = false)
-    private String nombrePeriodo;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "id_periodo")
+        private Long idPeriodo;
 
-    @Column(name = "descripcion", nullable = false)
-    private String descripcion;
+        @Column(name = "nombre_periodo", nullable = false)
+        private String nombrePeriodo;
 
-    @ManyToOne
-    @JoinColumn(name = "id_carrera", nullable = false)
-    private Carrera carrera;
-}
+        @Column(nullable = false)
+        private LocalDate fechaInicio;
+
+        @Column(nullable = false)
+        private LocalDate fechaFin;
+
+        @Column(name = "estado")
+        private boolean estado;
+
+        @Column(name = "descripcion")
+        private String descripcion;
+
+    }

@@ -48,7 +48,7 @@ public class Clase {
     @Column(nullable = false)
     private DiaEnum dia;
 
-    @Enumerated(EnumType.STRING) // Se almacena como texto en la BD
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo", columnDefinition = "VARCHAR(255) DEFAULT 'CLASE'")
     private TipoEnum tipoEnum;
 

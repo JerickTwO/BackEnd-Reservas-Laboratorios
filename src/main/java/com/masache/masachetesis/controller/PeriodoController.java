@@ -26,6 +26,16 @@ public class PeriodoController {
         return ResponseEntity.ok(periodoService.obtenerTodos());
     }
 
+
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<Periodo> cambiarEstado(@PathVariable Long id, @RequestParam boolean estado) {
+        try {
+            Periodo periodoActualizado = periodoService.cambiarEstado(id, estado);
+            return ResponseEntity.ok(periodoActualizado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
     /**
      * Obtener un periodo por ID.
      */
