@@ -53,7 +53,6 @@ public class ReservaService {
                     .findById(reserva.getLaboratorio().getIdLaboratorio())
                     .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
 
-            // VALIDACIÓN: más participantes que capacidad
             if (reserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
                 throw new RuntimeException("Hay demasiados participantes, no se puede realizar la reserva.");
             }
