@@ -21,12 +21,31 @@ public class PeriodoService {
     public Optional<Periodo> obtenerPorId(Long id) {
         return periodoRepository.findById(id);
     }
+    @Transactional(readOnly = true)
+    public Optional<Periodo> obtenerPeriodoActivo() {
+        return periodoRepository.findByEstadoTrue();
+    }
 
     @Transactional
     public Periodo guardar(Periodo periodo) {
+        // Validación de Nombre Duplicado
         if (periodoRepository.existsByNombrePeriodo(periodo.getNombrePeriodo())) {
             throw new IllegalArgumentException("El nombre del periodo ya está en uso.");
         }
+
+        // Validación de Fechas
+        if (periodo.getFechaInicio() == null || periodo.getFechaFin() == null) {
+            throw new IllegalArgumentException("Las fechas de inicio y fin son obligatorias.");
+        }
+        if (periodo.getFechaInicio().isAfter(periodo.getFechaFin())) {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin.");
+        }
+
+        // Validación de Descripción
+        if (periodo.getDescripcion() == null || periodo.getDescripcion().trim().isEmpty()) {
+            throw new IllegalArgumentException("La descripción es obligatoria.");
+        }
+
         return periodoRepository.save(periodo);
     }
 

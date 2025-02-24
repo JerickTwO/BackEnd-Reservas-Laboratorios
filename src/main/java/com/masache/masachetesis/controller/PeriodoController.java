@@ -26,7 +26,12 @@ public class PeriodoController {
         return ResponseEntity.ok(periodoService.obtenerTodos());
     }
 
-
+    @GetMapping("/activo")
+    public ResponseEntity<Periodo> obtenerPeriodoActivo() {
+        Optional<Periodo> periodoActivo = periodoService.obtenerPeriodoActivo();
+        return periodoActivo.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
     @PatchMapping("/{id}/estado")
     public ResponseEntity<Periodo> cambiarEstado(@PathVariable Long id, @RequestParam boolean estado) {
         try {

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @AllArgsConstructor
@@ -24,18 +25,15 @@ public class Periodo {
     private String nombrePeriodo;
 
     @Column(nullable = false)
-    private LocalTime horaInicio;
+    private LocalDate fechaInicio;
 
     @Column(nullable = false)
-    private LocalTime horaFin;
+    private LocalDate fechaFin;
 
     @Column(name = "estado")
-    private Boolean estado;
+    private boolean estado;
 
-    @Column(name = "descripcion", nullable = false)
+    @Column(name = "descripcion")
     private String descripcion;
 
-    @ManyToOne
-    @JoinColumn(name = "id_carrera", nullable = false)
-    private Carrera carrera;
 }
