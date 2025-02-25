@@ -49,8 +49,8 @@ public class Clase {
     private DiaEnum dia;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", columnDefinition = "VARCHAR(255) DEFAULT 'CLASE'")
-    private TipoEnum tipoEnum;
+    @Column(name = "tipo")
+    private TipoEnum tipo;
 
     @CreationTimestamp
     @Column(name = "creacion", updatable = false)

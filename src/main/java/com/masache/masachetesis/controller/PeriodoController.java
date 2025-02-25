@@ -18,9 +18,6 @@ public class PeriodoController {
         this.periodoService = periodoService;
     }
 
-    /**
-     * Obtener todos los periodos.
-     */
     @GetMapping
     public ResponseEntity<List<Periodo>> obtenerTodos() {
         return ResponseEntity.ok(periodoService.obtenerTodos());

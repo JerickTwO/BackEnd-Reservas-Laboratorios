@@ -1,10 +1,7 @@
 package com.masache.masachetesis.service;
 
 import com.masache.masachetesis.models.*;
-import com.masache.masachetesis.repositories.AdministradorRepository;
-import com.masache.masachetesis.repositories.HorarioRepository;
-import com.masache.masachetesis.repositories.LaboratorioRepository;
-import com.masache.masachetesis.repositories.ReservaRepository;
+import com.masache.masachetesis.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +29,9 @@ public class ReservaService {
     @Autowired
     private HorarioRepository horarioRepository;
 
+    @Autowired
+    private PeriodoRepository periodoRepository;
+
     // Obtener todas las reservas
     public List<Reserva> getAllReservas() {
         return reservaRepository.findAll();
@@ -42,7 +42,6 @@ public class ReservaService {
         return reservaRepository.findById(idReserva);
     }
 
-    // Crear una nueva reserva
     public Reserva createReserva(Reserva reserva, Usuario usuario) {
         if (!"admin".equals(usuario.getRol().getNombre()) &&
                 (reserva.getEstado() == Reserva.EstadoReserva.APROBADA || reserva.getEstado() == Reserva.EstadoReserva.RECHAZADA)) {
@@ -62,30 +61,34 @@ public class ReservaService {
         if (diffHours != 1) {
             throw new RuntimeException("La reserva debe durar exactamente 1 hora.");
         }
+        List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
+        if (periodosActivos.isEmpty()) {
+            log.error("No hay periodos activos en el sistema");
+            throw new IllegalArgumentException("No hay periodos activos.");
+        }
 
+        Periodo periodoActivo = periodosActivos.get(0); // Suponiendo que solo hay un periodo activo a la vez
+        reserva.setPeriodo(periodoActivo);
         if ("docente".equals(usuario.getRol().getNombre())) {
             reserva.setEstado(Reserva.EstadoReserva.PENDIENTE);
         }
         log.info("El usuario logeado es: {}", usuario);
 
-        reserva.setTipoEnum(TipoEnum.RESERVA);
+        reserva.setTipo(TipoEnum.RESERVA);
+        log.info("El tipo del usuario es: {}", reserva.getTipo());
         reserva.setNombreCompleto(usuario.getNombre() + " " + usuario.getApellido());
         log.info("El nombre completo del usuario es: {}", reserva.getNombreCompleto());
         reserva.setCorreo(usuario.getCorreo());
         log.info("El correo del usuario es: {}", reserva.getCorreo());
 
-
-        // Verificar si el laboratorio existe y asignarlo
         if (reserva.getLaboratorio() != null && reserva.getLaboratorio().getIdLaboratorio() != null) {
             Laboratorio laboratorio = laboratorioRepository.findById(reserva.getLaboratorio().getIdLaboratorio())
                     .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
-            // Verificar capacidad del laboratorio antes de aceptar la reserva
             if (reserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
                 throw new RuntimeException("Hay demasiados estudiantes, no se puede realizar la reserva");
             }
             reserva.setLaboratorio(laboratorio);
         }
-
         Reserva nuevaReserva = reservaRepository.save(reserva);
 
         // Enviar correo solo si hay administradores registrados
@@ -94,12 +97,8 @@ public class ReservaService {
         } else {
             log.warn("No se envió el correo de reserva porque no hay administradores registrados.");
         }
-
         return nuevaReserva;
     }
-
-
-    // Actualizar una reserva existente
     public Reserva updateReserva(Long idReserva, Reserva updatedReserva) {
         return reservaRepository.findById(idReserva).map(reserva -> {
 
@@ -126,11 +125,8 @@ public class ReservaService {
                 reserva.setLaboratorio(laboratorio);
             }
             if (Reserva.EstadoReserva.APROBADA.equals(updatedReserva.getEstado())) {
-                // Crear un nuevo horario y asignarle la reserva aprobada
                 Horario horario = new Horario();
                 horario.setReserva(reserva);
-
-                // Guardar el horario en la base de datos
                 horarioRepository.save(horario);
                 log.info("Horario creado para la reserva con ID: {}", updatedReserva.getIdReserva());
             } else {

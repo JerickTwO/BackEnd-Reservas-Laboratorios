@@ -41,6 +41,10 @@ public class Reserva {
     private String ocupacionLaboral;
 
     @ManyToOne
+    @JoinColumn(name = "id_periodo", nullable = false)
+    private Periodo periodo;
+
+    @ManyToOne
     @JoinColumn(name = "id_laboratorio", nullable = false)
     private Laboratorio laboratorio;
 
@@ -74,11 +78,10 @@ public class Reserva {
         APROBADA,  // La reserva ha sido aceptada
         RECHAZADA  // La reserva ha sido rechazada
     }
-    @Enumerated(EnumType.STRING) // Se almacena como texto en la BD
-    @Column(name = "tipo", columnDefinition = "VARCHAR(255) DEFAULT 'RESERVA'")
-    private TipoEnum tipoEnum;
+    @Column(name = "tipo")
+    private TipoEnum tipo;
 
-    // Fechas de creación y actualización
+
     @CreationTimestamp
     @Column(name = "creacion", updatable = false)
     private LocalDateTime fechaCreacion; // Fecha de creación

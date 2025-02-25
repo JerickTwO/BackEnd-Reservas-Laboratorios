@@ -2,6 +2,7 @@ package com.masache.masachetesis.dto;
 
 import com.masache.masachetesis.models.DiaEnum;
 import com.masache.masachetesis.models.Laboratorio;
+import com.masache.masachetesis.models.Periodo;
 import com.masache.masachetesis.models.TipoEnum;
 import lombok.*;
 
@@ -17,6 +18,7 @@ public class HorarioReservasDto {
     private String correoDocente;
     private String motivo;
     private Laboratorio laboratorio;
+    private Periodo periodo;
     private String nombreMateria;
     private LocalTime horaInicio;
     private LocalTime horaFin;

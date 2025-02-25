@@ -23,10 +23,14 @@ public class HorarioService {
 
     // Franjas horarias permitidas (7-9, 9-11, 11-13, 13:30-15:30)
     private static final List<LocalTime[]> FRANJAS_HORARIAS_PERMITIDAS = List.of(
-            new LocalTime[]{LocalTime.of(7, 0), LocalTime.of(9, 0)},
-            new LocalTime[]{LocalTime.of(9, 0), LocalTime.of(11, 0)},
-            new LocalTime[]{LocalTime.of(11, 0), LocalTime.of(13, 0)},
-            new LocalTime[]{LocalTime.of(13, 30), LocalTime.of(15, 30)}
+            new LocalTime[]{LocalTime.of(7, 0), LocalTime.of(8, 0)},
+            new LocalTime[]{LocalTime.of(8, 0), LocalTime.of(9, 0)},
+            new LocalTime[]{LocalTime.of(9, 0), LocalTime.of(10, 0)},
+            new LocalTime[]{LocalTime.of(10, 0), LocalTime.of(11, 0)},
+            new LocalTime[]{LocalTime.of(11, 0), LocalTime.of(12, 0)},
+            new LocalTime[]{LocalTime.of(12, 0), LocalTime.of(13, 0)},
+            new LocalTime[]{LocalTime.of(13, 0), LocalTime.of(14, 0)},
+            new LocalTime[]{LocalTime.of(14, 0), LocalTime.of(15, 0)}
     );
 
     /**

@@ -74,12 +74,11 @@ public class ClaseService {
     /**
      * Guardar una nueva clase, verificando si ya existe.
      */
-    public Clase guardar(Clase clase) {
+    public Clase guardar(Clase clase)   {
         try {
             logger.info("Intentando guardar una nueva clase con Materia ID: {}, Docente ID: {}",
                     clase.getMateria().getIdMateria(), clase.getDocente().getIdDocente());
 
-            // Verificar existencia de Materia y Docente
             Materia materia = materiaRepository.findById(clase.getMateria().getIdMateria())
                     .orElseThrow(() -> {
                         logger.error("La materia con ID {} no existe", clase.getMateria().getIdMateria());
@@ -92,23 +91,31 @@ public class ClaseService {
                         return new IllegalArgumentException("El docente con el ID proporcionado no existe.");
                     });
 
-            // Buscar el periodo activo
-            List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
-            if (periodosActivos.isEmpty()) {
-                logger.error("No hay periodos activos en el sistema");
-                throw new IllegalArgumentException("No hay periodos activos.");
+            if (clase.getPeriodo() == null || clase.getPeriodo().getIdPeriodo() == null) {
+                // Buscar el periodo activo
+                List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
+                if (periodosActivos.isEmpty()) {
+                    logger.error("No hay periodos activos en el sistema");
+                    throw new IllegalArgumentException("No hay periodos activos.");
+                }
+                Periodo periodoActivo = periodosActivos.get(0);
+                clase.setPeriodo(periodoActivo);
+            } else {
+                // Verificar si el Periodo enviado existe en la base de datos
+                Periodo periodo = periodoRepository.findById(clase.getPeriodo().getIdPeriodo())
+                        .orElseThrow(() -> {
+                            logger.error("El periodo con ID {} no existe", clase.getPeriodo().getIdPeriodo());
+                            return new IllegalArgumentException("El periodo con el ID proporcionado no existe.");
+                        });
+                clase.setPeriodo(periodo);
             }
-
-            Periodo periodoActivo = periodosActivos.get(0); // Suponiendo que solo hay un periodo activo a la vez
-            clase.setPeriodo(periodoActivo);
-
             // Verificar si la clase ya existe
             Optional<Clase> claseExistente = claseRepository.findByMateria_IdMateriaAndDocente_IdDocenteAndPeriodo_IdPeriodo(
-                    materia.getIdMateria(), docente.getIdDocente(), periodoActivo.getIdPeriodo());
+                    materia.getIdMateria(), docente.getIdDocente(), clase.getPeriodo().getIdPeriodo());
 
             if (claseExistente.isPresent()) {
                 logger.error("La clase ya existe en el sistema: Materia ID: {}, Docente ID: {}, Periodo ID: {}",
-                        materia.getIdMateria(), docente.getIdDocente(), periodoActivo.getIdPeriodo());
+                        materia.getIdMateria(), docente.getIdDocente(), clase.getPeriodo().getIdPeriodo());
                 throw new IllegalArgumentException("La clase ya existe en este periodo con este docente y materia.");
             }
 
