@@ -1,10 +1,7 @@
 package com.masache.masachetesis.service;
 
 import com.masache.masachetesis.models.*;
-import com.masache.masachetesis.repositories.AdministradorRepository;
-import com.masache.masachetesis.repositories.HorarioRepository;
-import com.masache.masachetesis.repositories.LaboratorioRepository;
-import com.masache.masachetesis.repositories.ReservaRepository;
+import com.masache.masachetesis.repositories.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,27 +28,28 @@ public class ReservaService {
 
     @Autowired
     private HorarioRepository horarioRepository;
+    @Autowired
+    private PeriodoRepository periodoRepository;
 
-    // Obtener todas las reservas
     public List<Reserva> getAllReservas() {
         return reservaRepository.findAll();
     }
 
-    // Obtener una reserva por ID
     public Optional<Reserva> getReservaById(Long idReserva) {
         return reservaRepository.findById(idReserva);
     }
 
-    // Crear una nueva reserva
+    public List<Reserva> getReservasByPeriodoActivo() {
+        Periodo periodoActivo = periodoRepository.findByEstadoTrue().orElseThrow(() -> new RuntimeException("No hay un período activo."));
+        return reservaRepository.findByPeriodo(periodoActivo);
+    }
+
     public Reserva createReserva(Reserva reserva, Usuario usuario) {
-        if (!"admin".equals(usuario.getRol().getNombre()) &&
-                (reserva.getEstado() == Reserva.EstadoReserva.APROBADA || reserva.getEstado() == Reserva.EstadoReserva.RECHAZADA)) {
+        if (!"admin".equals(usuario.getRol().getNombre()) && (reserva.getEstado() == Reserva.EstadoReserva.APROBADA || reserva.getEstado() == Reserva.EstadoReserva.RECHAZADA)) {
             throw new RuntimeException("No tienes permiso para aprobar o rechazar reservas.");
         }
         if (reserva.getLaboratorio() != null && reserva.getLaboratorio().getIdLaboratorio() != null) {
-            Laboratorio laboratorio = laboratorioRepository
-                    .findById(reserva.getLaboratorio().getIdLaboratorio())
-                    .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
+            Laboratorio laboratorio = laboratorioRepository.findById(reserva.getLaboratorio().getIdLaboratorio()).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
 
             if (reserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
                 throw new RuntimeException("Hay demasiados participantes, no se puede realizar la reserva.");
@@ -74,12 +72,16 @@ public class ReservaService {
         reserva.setCorreo(usuario.getCorreo());
         log.info("El correo del usuario es: {}", reserva.getCorreo());
 
+        List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
+        if (periodosActivos.isEmpty()) {
+            log.error("No hay periodos activos en el sistema");
+            throw new IllegalArgumentException("No hay periodos activos.");
+        }
 
-        // Verificar si el laboratorio existe y asignarlo
+        Periodo periodoActivo = periodosActivos.get(0); // Suponiendo que solo hay un periodo activo a la vez
+        reserva.setPeriodo(periodoActivo);
         if (reserva.getLaboratorio() != null && reserva.getLaboratorio().getIdLaboratorio() != null) {
-            Laboratorio laboratorio = laboratorioRepository.findById(reserva.getLaboratorio().getIdLaboratorio())
-                    .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
-            // Verificar capacidad del laboratorio antes de aceptar la reserva
+            Laboratorio laboratorio = laboratorioRepository.findById(reserva.getLaboratorio().getIdLaboratorio()).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
             if (reserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
                 throw new RuntimeException("Hay demasiados estudiantes, no se puede realizar la reserva");
             }
@@ -88,7 +90,6 @@ public class ReservaService {
 
         Reserva nuevaReserva = reservaRepository.save(reserva);
 
-        // Enviar correo solo si hay administradores registrados
         if (administradorRepository.count() > 0) {
             mailService.enviarCorreoReserva(nuevaReserva, usuario);
         } else {
@@ -109,32 +110,17 @@ public class ReservaService {
             reserva.setOcupacionLaboral(updatedReserva.getOcupacionLaboral());
 
             if (updatedReserva.getLaboratorio() != null && updatedReserva.getLaboratorio().getIdLaboratorio() != null) {
-                Laboratorio laboratorio = laboratorioRepository.findById(updatedReserva.getLaboratorio().getIdLaboratorio())
-                        .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
+                Laboratorio laboratorio = laboratorioRepository.findById(updatedReserva.getLaboratorio().getIdLaboratorio()).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
                 reserva.setLaboratorio(laboratorio);
             }
             log.info("Estado de la reserva: {}", updatedReserva.getEstado());
-            if (updatedReserva.getLaboratorio() != null
-                    && updatedReserva.getLaboratorio().getIdLaboratorio() != null) {
-                Laboratorio laboratorio = laboratorioRepository
-                        .findById(updatedReserva.getLaboratorio().getIdLaboratorio())
-                        .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
+            if (updatedReserva.getLaboratorio() != null && updatedReserva.getLaboratorio().getIdLaboratorio() != null) {
+                Laboratorio laboratorio = laboratorioRepository.findById(updatedReserva.getLaboratorio().getIdLaboratorio()).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
 
                 if (updatedReserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
                     throw new RuntimeException("Hay demasiados participantes, no se puede actualizar la reserva.");
                 }
                 reserva.setLaboratorio(laboratorio);
-            }
-            if (Reserva.EstadoReserva.APROBADA.equals(updatedReserva.getEstado())) {
-                // Crear un nuevo horario y asignarle la reserva aprobada
-                Horario horario = new Horario();
-                horario.setReserva(reserva);
-
-                // Guardar el horario en la base de datos
-                horarioRepository.save(horario);
-                log.info("Horario creado para la reserva con ID: {}", updatedReserva.getIdReserva());
-            } else {
-                log.warn("La reserva no está aprobada, no se creará el horario.{}",updatedReserva.getEstado());
             }
             long diffHours = ChronoUnit.HOURS.between(updatedReserva.getHoraInicio(), updatedReserva.getHoraFin());
             if (diffHours != 1) {

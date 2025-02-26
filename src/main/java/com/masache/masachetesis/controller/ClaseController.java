@@ -31,18 +31,17 @@ public class ClaseController {
         return ResponseEntity.ok(clases);
     }
 
-    /**
-     * Obtener una clase por ID.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<Clase> obtenerPorId(@PathVariable Long id) {
         Optional<Clase> clase = claseService.obtenerPorId(id);
         return clase.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * Crear una nueva clase.
-     */
+    @GetMapping("/periodo-activo")
+    public ResponseEntity<List<Clase>> getReservasByPeriodoActual() {
+        List<Clase> clases = claseService.getClasesByPeriodoActivo();
+        return ResponseEntity.ok(clases);
+    }
     @PostMapping
     public ResponseEntity<?> guardar(@RequestBody Clase clase) {
         try {

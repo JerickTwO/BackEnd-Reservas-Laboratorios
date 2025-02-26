@@ -1,6 +1,7 @@
 package com.masache.masachetesis.repositories;
 
 import com.masache.masachetesis.models.Clase;
+import com.masache.masachetesis.models.Periodo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,4 +22,7 @@ public interface ClaseRepository extends JpaRepository<Clase, Long> {
 
     // Obtener clases por periodo
     List<Clase> findByPeriodo_IdPeriodo(Long idPeriodo);
+
+    List<Clase> findByPeriodo(Periodo periodo);
+
 }

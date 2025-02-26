@@ -41,6 +41,12 @@ public class ReservaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/periodo-activo")
+    public ResponseEntity<List<Reserva>> getReservasByPeriodoActivo() {
+        List<Reserva> reservas = reservaService.getReservasByPeriodoActivo();
+        return ResponseEntity.ok(reservas);
+    }
+
     // Crear una nueva reserva
     @PostMapping
     public ResponseEntity<Reserva> createReserva(@Valid @RequestBody Reserva reserva, @RequestHeader("Authorization") String token) {

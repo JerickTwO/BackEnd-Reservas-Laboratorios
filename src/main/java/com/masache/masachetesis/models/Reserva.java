@@ -78,6 +78,10 @@ public class Reserva {
     @Column(name = "tipo", columnDefinition = "VARCHAR(255) DEFAULT 'RESERVA'")
     private TipoEnum tipoEnum;
 
+    @ManyToOne
+    @JoinColumn(name = "id_periodo", nullable = false)
+    private Periodo periodo;
+
     // Fechas de creación y actualización
     @CreationTimestamp
     @Column(name = "creacion", updatable = false)

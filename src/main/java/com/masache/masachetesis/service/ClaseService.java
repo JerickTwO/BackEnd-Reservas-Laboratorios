@@ -47,39 +47,30 @@ public class ClaseService {
         return claseRepository.findById(id);
     }
 
-    /**
-     * Obtener clases por materia.
-     */
+    public List<Clase> getClasesByPeriodoActivo() {
+        Periodo periodoActivo = periodoRepository.findByEstadoTrue().orElseThrow(() -> new RuntimeException("No hay un período activo"));
+        return claseRepository.findByPeriodo(periodoActivo);
+    }
+
     public List<Clase> obtenerPorMateria(Long idMateria) {
         logger.info("Obteniendo clases por ID de Materia: {}", idMateria);
         return claseRepository.findByMateria_IdMateria(idMateria);
     }
 
-    /**
-     * Obtener clases por docente.
-     */
     public List<Clase> obtenerPorDocente(Long idDocente) {
         logger.info("Obteniendo clases por ID de Docente: {}", idDocente);
         return claseRepository.findByDocente_IdDocente(idDocente);
     }
 
-    /**
-     * Obtener clases por periodo.
-     */
     public List<Clase> obtenerPorPeriodo(Long idPeriodo) {
         logger.info("Obteniendo clases por ID de Periodo: {}", idPeriodo);
         return claseRepository.findByPeriodo_IdPeriodo(idPeriodo);
     }
 
-    /**
-     * Guardar una nueva clase, verificando si ya existe.
-     */
     public Clase guardar(Clase clase) {
         try {
             logger.info("Intentando guardar una nueva clase con Materia ID: {}, Docente ID: {}",
                     clase.getMateria().getIdMateria(), clase.getDocente().getIdDocente());
-
-            // Verificar existencia de Materia y Docente
             Materia materia = materiaRepository.findById(clase.getMateria().getIdMateria())
                     .orElseThrow(() -> {
                         logger.error("La materia con ID {} no existe", clase.getMateria().getIdMateria());
@@ -101,7 +92,7 @@ public class ClaseService {
 
             Periodo periodoActivo = periodosActivos.get(0); // Suponiendo que solo hay un periodo activo a la vez
             clase.setPeriodo(periodoActivo);
-
+            clase.setTipoEnum(TipoEnum.CLASE);
             // Verificar si la clase ya existe
             Optional<Clase> claseExistente = claseRepository.findByMateria_IdMateriaAndDocente_IdDocenteAndPeriodo_IdPeriodo(
                     materia.getIdMateria(), docente.getIdDocente(), periodoActivo.getIdPeriodo());
@@ -174,7 +165,7 @@ public class ClaseService {
         logger.info("Intentando eliminar clase con ID: {}", id);
 
         if (!claseRepository.existsById(id)) {
-                logger.error("La clase con ID {} no existe", id);
+            logger.error("La clase con ID {} no existe", id);
             throw new IllegalArgumentException("La clase con el ID proporcionado no existe.");
         }
         claseRepository.deleteById(id);

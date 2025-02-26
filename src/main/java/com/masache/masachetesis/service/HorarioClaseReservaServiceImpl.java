@@ -2,8 +2,10 @@ package com.masache.masachetesis.service;
 
 import com.masache.masachetesis.dto.HorarioReservasDto;
 import com.masache.masachetesis.models.Clase;
+import com.masache.masachetesis.models.Periodo;
 import com.masache.masachetesis.models.Reserva;
 import com.masache.masachetesis.repositories.ClaseRepository;
+import com.masache.masachetesis.repositories.PeriodoRepository;
 import com.masache.masachetesis.repositories.ReservaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,20 +23,27 @@ public class HorarioClaseReservaServiceImpl {
 
     private final ClaseRepository claseRepository;
     private final ReservaRepository reservaRepository;
+    private final PeriodoRepository periodoRepository; // <-- Asegúrate de inyectar este repo
 
     public List<HorarioReservasDto> getHorarioClaseReserva() {
-        List<Clase> clases = claseRepository.findAll();
+        // 1. Obtener período activo
+        Periodo periodoActivo = periodoRepository.findByEstadoTrue()
+                .orElseThrow(() -> new NoSuchElementException("No hay un período activo."));
+
+        // 2. Buscar clases de ese período
+        List<Clase> clases = claseRepository.findByPeriodo(periodoActivo);
         if (clases.isEmpty()) {
-            throw new NoSuchElementException("No se encontraron clases disponibles.");
+            throw new NoSuchElementException("No se encontraron clases para el período activo.");
         }
 
-        List<Reserva> reservas = reservaRepository.findByEstado(Reserva.EstadoReserva.APROBADA);
-        if (reservas.isEmpty()) {
-            throw new NoSuchElementException("No se encontraron reservas aprobadas.");
-        }
+        // 3. Buscar reservas aprobadas de ese período
+        List<Reserva> reservas = reservaRepository.findByEstadoAndPeriodo(
+                Reserva.EstadoReserva.APROBADA,
+                periodoActivo
+        );
 
+        // 4. Mapear a DTO
         List<HorarioReservasDto> horarios = new ArrayList<>();
-        // Convertir Reservas a DTO
         List<HorarioReservasDto> reservasDto = reservas.stream().map(reserva ->
                 HorarioReservasDto.builder()
                         .id(reserva.getIdReserva())
@@ -49,8 +58,6 @@ public class HorarioClaseReservaServiceImpl {
                         .tipo(reserva.getTipoEnum())
                         .build()
         ).collect(Collectors.toList());
-
-        // Convertir Clases a DTO
         List<HorarioReservasDto> clasesDto = clases.stream().map(clase ->
                 HorarioReservasDto.builder()
                         .id(clase.getIdClase())
@@ -70,5 +77,4 @@ public class HorarioClaseReservaServiceImpl {
 
         return horarios;
     }
-
 }
