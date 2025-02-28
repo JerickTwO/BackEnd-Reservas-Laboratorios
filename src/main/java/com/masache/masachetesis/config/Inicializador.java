@@ -41,8 +41,8 @@ public class Inicializador implements CommandLineRunner {
 
         // Crear usuarios
         List<Usuario> usuarios = List.of(
-                new Usuario(null, "admin", "Ana", "López", "jerickjjtm774@gmail.com", "$2a$12$PgD/fKcNC46SjVLzhR3CdeEDj9UYvM.pvJ2lkvjDQqOMLLRocAGDW", adminRole, true, true),
-                new Usuario(null, "L123456789", "Juan", "Pérez", "juan.perez@escuela.com", "$2a$12$.5mrqMQIp5/uqvjwhhY86OeraRv3sDVE2S9ga/ovR4joA02krE3rC", docenteRole, true, true)
+                new Usuario(null, "admin", "Ana", "López", "jerickjjtm774@gmail.com", "$2a$12$PgD/fKcNC46SjVLzhR3CdeEDj9UYvM.pvJ2lkvjDQqOMLLRocAGDW", adminRole, true, true,null),
+                new Usuario(null, "L123456789", "Juan", "Pérez", "juan.perez@escuela.com", "$2a$12$.5mrqMQIp5/uqvjwhhY86OeraRv3sDVE2S9ga/ovR4joA02krE3rC", docenteRole, true, true,null)
         );
 
         List<Usuario> newUsuarios = usuarios.stream()

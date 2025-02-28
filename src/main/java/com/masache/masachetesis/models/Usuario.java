@@ -1,5 +1,7 @@
 package com.masache.masachetesis.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,6 +50,10 @@ public class Usuario {
     @Column(name = "estado", nullable = false, columnDefinition = "boolean default true")
     private Boolean estado;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    @JsonIgnore
+    private Set<PasswordRecovery> passwordRecoveries = new HashSet<>();
 
 
     @Override

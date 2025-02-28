@@ -23,26 +23,22 @@ public class HorarioClaseReservaServiceImpl {
 
     private final ClaseRepository claseRepository;
     private final ReservaRepository reservaRepository;
-    private final PeriodoRepository periodoRepository; // <-- Asegúrate de inyectar este repo
+    private final PeriodoRepository periodoRepository;
 
     public List<HorarioReservasDto> getHorarioClaseReserva() {
-        // 1. Obtener período activo
         Periodo periodoActivo = periodoRepository.findByEstadoTrue()
                 .orElseThrow(() -> new NoSuchElementException("No hay un período activo."));
 
-        // 2. Buscar clases de ese período
         List<Clase> clases = claseRepository.findByPeriodo(periodoActivo);
         if (clases.isEmpty()) {
             throw new NoSuchElementException("No se encontraron clases para el período activo.");
         }
 
-        // 3. Buscar reservas aprobadas de ese período
         List<Reserva> reservas = reservaRepository.findByEstadoAndPeriodo(
                 Reserva.EstadoReserva.APROBADA,
                 periodoActivo
         );
 
-        // 4. Mapear a DTO
         List<HorarioReservasDto> horarios = new ArrayList<>();
         List<HorarioReservasDto> reservasDto = reservas.stream().map(reserva ->
                 HorarioReservasDto.builder()
