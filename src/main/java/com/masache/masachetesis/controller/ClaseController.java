@@ -1,5 +1,6 @@
 package com.masache.masachetesis.controller;
 
+import com.masache.masachetesis.dto.JsonResponseDto;
 import com.masache.masachetesis.models.Clase;
 import com.masache.masachetesis.service.ClaseService;
 import org.slf4j.Logger;
@@ -62,16 +63,11 @@ public class ClaseController {
      * Actualizar una clase existente.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Clase clase) {
-        try {
-            logger.info("Intentando actualizar clase ID: {}", id);
-            Clase claseActualizada = claseService.actualizar(id, clase);
-            return ResponseEntity.ok(claseActualizada);
-        } catch (Exception e) {
-            logger.error("Error al actualizar la clase: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body("Error al actualizar la clase: " + e.getMessage());
-        }
+    public ResponseEntity<JsonResponseDto> actualizar(@PathVariable Long id, @RequestBody Clase clase) {
+        JsonResponseDto response = claseService.actualizar(id, clase);
+        return ResponseEntity.status(response.getCodigoHttp()).body(response);
     }
+
 
     /**
      * Eliminar una clase por ID.

@@ -1,10 +1,10 @@
 package com.masache.masachetesis.service;
 
+import com.masache.masachetesis.dto.JsonResponseDto;
 import com.masache.masachetesis.models.*;
-import com.masache.masachetesis.repositories.ClaseRepository;
-import com.masache.masachetesis.repositories.DocenteRepository;
-import com.masache.masachetesis.repositories.MateriaRepository;
-import com.masache.masachetesis.repositories.PeriodoRepository;
+import com.masache.masachetesis.repositories.*;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+@AllArgsConstructor
 @Service
 public class ClaseService {
 
@@ -22,14 +23,7 @@ public class ClaseService {
     private final MateriaRepository materiaRepository;
     private final DocenteRepository docenteRepository;
     private final PeriodoRepository periodoRepository;
-
-    public ClaseService(ClaseRepository claseRepository, MateriaRepository materiaRepository,
-                        DocenteRepository docenteRepository, PeriodoRepository periodoRepository) {
-        this.claseRepository = claseRepository;
-        this.materiaRepository = materiaRepository;
-        this.docenteRepository = docenteRepository;
-        this.periodoRepository = periodoRepository;
-    }
+    private final LaboratorioRepository laboratorioRepository;
 
     /**
      * Obtener todas las clases.
@@ -116,45 +110,73 @@ public class ClaseService {
      * Actualizar una clase existente.
      */
     @Transactional
-    public Clase actualizar(Long id, Clase claseActualizada) {
+    public JsonResponseDto actualizar(Long id, Clase claseActualizada) {
         logger.info("Intentando actualizar clase con ID: {}", id);
 
-        // Verificar si la clase existe
-        Clase clase = claseRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.error("La clase con ID {} no existe", id);
-                    return new IllegalArgumentException("La clase con el ID proporcionado no existe.");
-                });
+        try {
+            // Verificar si la clase existe
+            Clase clase = claseRepository.findById(id)
+                    .orElseThrow(() -> {
+                        logger.error("La clase con ID {} no existe", id);
+                        return new IllegalArgumentException("La clase con el ID proporcionado no existe.");
+                    });
 
-        // Verificar existencia de Materia y Docente
-        Materia materia = materiaRepository.findById(claseActualizada.getMateria().getIdMateria())
-                .orElseThrow(() -> {
-                    logger.error("La materia con ID {} no existe", claseActualizada.getMateria().getIdMateria());
-                    return new IllegalArgumentException("La materia con el ID proporcionado no existe.");
-                });
+            // Verificar la existencia de Materia, Docente y Laboratorio
+            Materia materia = materiaRepository.findById(claseActualizada.getMateria().getIdMateria())
+                    .orElseThrow(() -> new IllegalArgumentException("La materia con el ID proporcionado no existe."));
+            Docente docente = docenteRepository.findById(claseActualizada.getDocente().getIdDocente())
+                    .orElseThrow(() -> new IllegalArgumentException("El docente con el ID proporcionado no existe."));
+            Laboratorio laboratorio = laboratorioRepository.findById(claseActualizada.getLaboratorio().getIdLaboratorio())
+                    .orElseThrow(() -> new IllegalArgumentException("El laboratorio con el ID proporcionado no existe."));
 
-        Docente docente = docenteRepository.findById(claseActualizada.getDocente().getIdDocente())
-                .orElseThrow(() -> {
-                    logger.error("El docente con ID {} no existe", claseActualizada.getDocente().getIdDocente());
-                    return new IllegalArgumentException("El docente con el ID proporcionado no existe.");
-                });
+            // Buscar el periodo activo
+            List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
+            if (periodosActivos.isEmpty()) {
+                return new JsonResponseDto(false, 400, "No hay periodos activos.", null, null);
+            }
+            Periodo periodoActivo = periodosActivos.get(0);
 
-        // Buscar el periodo activo
-        List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
-        if (periodosActivos.isEmpty()) {
-            logger.error("No hay periodos activos en el sistema");
-            throw new IllegalArgumentException("No hay periodos activos.");
+            // Validar si la clase ya existe en el mismo periodo con la misma materia y docente
+            Optional<Clase> claseExistente = claseRepository.findByMateria_IdMateriaAndDocente_IdDocenteAndPeriodo_IdPeriodo(
+                    materia.getIdMateria(), docente.getIdDocente(), periodoActivo.getIdPeriodo());
+
+            if (claseExistente.isPresent() && !claseExistente.get().getIdClase().equals(id)) {
+                return new JsonResponseDto(false, 400, "Ya existe una clase con esta materia y docente en este periodo.", null, null);
+            }
+
+            // Validar que la hora de inicio y fin sean válidas
+            if (claseActualizada.getHoraInicio().isAfter(claseActualizada.getHoraFin())) {
+                return new JsonResponseDto(false, 400, "La hora de inicio no puede ser después de la hora de fin.", null, null);
+            }
+
+            // Validar el día de la semana
+            if (claseActualizada.getDia() == null) {
+                return new JsonResponseDto(false, 400, "Debe especificar un día válido.", null, null);
+            }
+
+            // Actualizar la clase
+            clase.setMateria(materia);
+            clase.setDocente(docente);
+            clase.setLaboratorio(laboratorio);
+            clase.setPeriodo(periodoActivo);
+            clase.setHoraInicio(claseActualizada.getHoraInicio());
+            clase.setHoraFin(claseActualizada.getHoraFin());
+            clase.setDia(claseActualizada.getDia());
+            clase.setTipoEnum(TipoEnum.CLASE);
+
+            Clase claseGuardada = claseRepository.save(clase);
+
+            logger.info("Clase actualizada exitosamente con ID: {}", id);
+            return new JsonResponseDto(true, 200, "Clase actualizada correctamente", claseGuardada, null);
+
+        } catch (IllegalArgumentException e) {
+            logger.warn("Error de validación al actualizar clase: {}", e.getMessage());
+            return new JsonResponseDto(false, 400, "Error de validación", null, e.getMessage());
+
+        } catch (Exception e) {
+            logger.error("Error inesperado al actualizar clase: {}", e.getMessage(), e);
+            return new JsonResponseDto(false, 500, "Error inesperado al actualizar la clase.", null, e.getMessage());
         }
-
-        Periodo periodoActivo = periodosActivos.get(0); // Suponiendo que solo hay un periodo activo a la vez
-        claseActualizada.setPeriodo(periodoActivo);
-
-        // Actualizar los datos de la clase
-        clase.setMateria(materia);
-        clase.setDocente(docente);
-
-        logger.info("Clase actualizada exitosamente");
-        return claseRepository.save(clase);
     }
 
     /**
