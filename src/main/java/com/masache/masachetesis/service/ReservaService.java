@@ -27,8 +27,6 @@ public class ReservaService {
     private MailService mailService;
 
     @Autowired
-    private HorarioRepository horarioRepository;
-    @Autowired
     private PeriodoRepository periodoRepository;
 
     public List<Reserva> getAllReservas() {
@@ -45,104 +43,248 @@ public class ReservaService {
     }
 
     public Reserva createReserva(Reserva reserva, Usuario usuario) {
-        if (!"admin".equals(usuario.getRol().getNombre()) && (reserva.getEstado() == Reserva.EstadoReserva.APROBADA || reserva.getEstado() == Reserva.EstadoReserva.RECHAZADA)) {
+        if (!"admin".equals(usuario.getRol().getNombre()) &&
+                (reserva.getEstado() == Reserva.EstadoReserva.APROBADA || reserva.getEstado() == Reserva.EstadoReserva.RECHAZADA)) {
             throw new RuntimeException("No tienes permiso para aprobar o rechazar reservas.");
         }
-        if (reserva.getLaboratorio() != null && reserva.getLaboratorio().getIdLaboratorio() != null) {
-            Laboratorio laboratorio = laboratorioRepository.findById(reserva.getLaboratorio().getIdLaboratorio()).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
 
-            if (reserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
-                throw new RuntimeException("Hay demasiados participantes, no se puede realizar la reserva.");
+        // Validar que la fecha de reserva existe
+        if (reserva.getFechaReserva() == null) {
+            throw new RuntimeException("La fecha de reserva es obligatoria.");
+        }
+
+        try {
+            // Obtener el periodo activo
+            Periodo periodoActivo = periodoRepository.findByEstadoTrue()
+                    .orElseThrow(() -> new RuntimeException("No hay un período activo."));
+
+            // Validar que la fecha de reserva está dentro del periodo
+            if (reserva.getFechaReserva().isAfter(periodoActivo.getFechaFin())) {
+                throw new RuntimeException("La fecha de reserva no puede ser posterior a la fecha de fin del periodo (" + periodoActivo.getFechaFin() + ")");
             }
-            reserva.setLaboratorio(laboratorio);
-        }
-        long diffHours = ChronoUnit.HOURS.between(reserva.getHoraInicio(), reserva.getHoraFin());
-        if (diffHours != 1) {
-            throw new RuntimeException("La reserva debe durar exactamente 1 hora.");
-        }
 
-        if ("docente".equals(usuario.getRol().getNombre())) {
-            reserva.setEstado(Reserva.EstadoReserva.PENDIENTE);
-        }
-        log.info("El usuario logeado es: {}", usuario);
-
-        reserva.setTipoEnum(TipoEnum.RESERVA);
-        reserva.setNombreCompleto(usuario.getNombre() + " " + usuario.getApellido());
-        log.info("El nombre completo del usuario es: {}", reserva.getNombreCompleto());
-        reserva.setCorreo(usuario.getCorreo());
-        log.info("El correo del usuario es: {}", reserva.getCorreo());
-
-        List<Periodo> periodosActivos = periodoRepository.findByEstado(true);
-        if (periodosActivos.isEmpty()) {
-            log.error("No hay periodos activos en el sistema");
-            throw new IllegalArgumentException("No hay periodos activos.");
-        }
-
-        Periodo periodoActivo = periodosActivos.get(0); // Suponiendo que solo hay un periodo activo a la vez
-        reserva.setPeriodo(periodoActivo);
-        if (reserva.getLaboratorio() != null && reserva.getLaboratorio().getIdLaboratorio() != null) {
-            Laboratorio laboratorio = laboratorioRepository.findById(reserva.getLaboratorio().getIdLaboratorio()).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
-            if (reserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
-                throw new RuntimeException("Hay demasiados estudiantes, no se puede realizar la reserva");
+            if (reserva.getFechaReserva().isBefore(periodoActivo.getFechaInicio())) {
+                throw new RuntimeException("La fecha de reserva no puede ser anterior a la fecha de inicio del periodo (" + periodoActivo.getFechaInicio() + ")");
             }
-            reserva.setLaboratorio(laboratorio);
-        }
 
-        Reserva nuevaReserva = reservaRepository.save(reserva);
+            // Establecer el día automáticamente basado en la fecha de reserva
+            try {
+                String diaEnIngles = reserva.getFechaReserva().getDayOfWeek().name();
+                String diaEnEspanol;
 
-        if (administradorRepository.count() > 0) {
-            mailService.enviarCorreoReserva(nuevaReserva, usuario);
-        } else {
-            log.warn("No se envió el correo de reserva porque no hay administradores registrados.");
-        }
+                switch (diaEnIngles) {
+                    case "MONDAY":
+                        diaEnEspanol = "LUNES";
+                        break;
+                    case "TUESDAY":
+                        diaEnEspanol = "MARTES";
+                        break;
+                    case "WEDNESDAY":
+                        diaEnEspanol = "MIERCOLES";
+                        break;
+                    case "THURSDAY":
+                        diaEnEspanol = "JUEVES";
+                        break;
+                    case "FRIDAY":
+                        diaEnEspanol = "VIERNES";
+                        break;
+                    case "SATURDAY":
+                        diaEnEspanol = "SABADO";
+                        break;
+                    case "SUNDAY":
+                        diaEnEspanol = "DOMINGO";
+                        break;
+                    default:
+                        throw new RuntimeException("Día de la semana desconocido: " + diaEnIngles);
+                }
 
-        return nuevaReserva;
-    }
-
-
-    // Actualizar una reserva existente
-    public Reserva updateReserva(Long idReserva, Reserva updatedReserva) {
-        return reservaRepository.findById(idReserva).map(reserva -> {
-
-            reserva.setNombreCompleto(updatedReserva.getNombreCompleto());
-            reserva.setCorreo(updatedReserva.getCorreo());
-            reserva.setTelefono(updatedReserva.getTelefono());
-            reserva.setOcupacionLaboral(updatedReserva.getOcupacionLaboral());
-
-            if (updatedReserva.getLaboratorio() != null && updatedReserva.getLaboratorio().getIdLaboratorio() != null) {
-                Laboratorio laboratorio = laboratorioRepository.findById(updatedReserva.getLaboratorio().getIdLaboratorio()).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
-                reserva.setLaboratorio(laboratorio);
+                reserva.setDia(DiaEnum.valueOf(diaEnEspanol));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Error al determinar el día de la semana para la fecha proporcionada.");
             }
-            log.info("Estado de la reserva: {}", updatedReserva.getEstado());
-            if (updatedReserva.getLaboratorio() != null && updatedReserva.getLaboratorio().getIdLaboratorio() != null) {
-                Laboratorio laboratorio = laboratorioRepository.findById(updatedReserva.getLaboratorio().getIdLaboratorio()).orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
 
-                if (updatedReserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
-                    throw new RuntimeException("Hay demasiados participantes, no se puede actualizar la reserva.");
+            // Validar cantidad de participantes
+            if (reserva.getCantidadParticipantes() < 1) {
+                throw new RuntimeException("La cantidad de participantes no puede ser menor que 1.");
+            }
+
+            if (reserva.getLaboratorio() != null && reserva.getLaboratorio().getIdLaboratorio() != null) {
+                Laboratorio laboratorio = laboratorioRepository.findById(reserva.getLaboratorio().getIdLaboratorio())
+                        .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
+
+                // Validar que la cantidad de participantes no sea mayor que la capacidad del laboratorio
+                if (reserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
+                    throw new RuntimeException("La cantidad de participantes no puede ser mayor que la capacidad del laboratorio (" + laboratorio.getCapacidad() + ").");
                 }
                 reserva.setLaboratorio(laboratorio);
             }
+
+            long diffHours = ChronoUnit.HOURS.between(reserva.getHoraInicio(), reserva.getHoraFin());
+            if (diffHours != 1) {
+                throw new RuntimeException("La reserva debe durar exactamente 1 hora.");
+            }
+
+            if ("docente".equals(usuario.getRol().getNombre())) {
+                reserva.setEstado(Reserva.EstadoReserva.PENDIENTE);
+            }
+
+            reserva.setTipoEnum(TipoEnum.RESERVA);
+            reserva.setNombreCompleto(usuario.getNombre() + " " + usuario.getApellido());
+            reserva.setCorreo(usuario.getCorreo());
+            reserva.setPeriodo(periodoActivo);
+
+            Reserva nuevaReserva = reservaRepository.save(reserva);
+
+            if (administradorRepository.count() > 0) {
+                mailService.enviarCorreoReserva(nuevaReserva, usuario);
+            } else {
+                log.warn("No se envió el correo de reserva porque no hay administradores registrados.");
+            }
+
+            return nuevaReserva;
+
+        } catch (Exception e) {
+            log.error("Error al crear la reserva: {}", e.getMessage());
+            throw new RuntimeException("Error al crear la reserva: " + e.getMessage());
+        }
+    }
+
+
+
+    // Actualizar una reserva existente
+    public Reserva updateReserva(Long idReserva, Reserva updatedReserva, Usuario usuario) {
+        if (!"admin".equals(usuario.getRol().getNombre()) &&
+                (updatedReserva.getEstado() == Reserva.EstadoReserva.APROBADA || updatedReserva.getEstado() == Reserva.EstadoReserva.RECHAZADA)) {
+            throw new RuntimeException("No tienes permiso para aprobar o rechazar reservas.");
+        }
+
+        return reservaRepository.findById(idReserva).map(reserva -> {
+            // Validar que la fecha de reserva existe
+            if (updatedReserva.getFechaReserva() == null) {
+                throw new RuntimeException("La fecha de reserva es obligatoria.");
+            }
+
+            // Obtener el periodo activo
+            Periodo periodoActivo = periodoRepository.findByEstadoTrue()
+                    .orElseThrow(() -> new RuntimeException("No hay un período activo."));
+
+            // Validar que la fecha de reserva está dentro del periodo
+            if (updatedReserva.getFechaReserva().isAfter(periodoActivo.getFechaFin())) {
+                throw new RuntimeException("La fecha de reserva no puede ser posterior a la fecha de fin del periodo (" +
+                        periodoActivo.getFechaFin() + ")");
+            }
+
+            if (updatedReserva.getFechaReserva().isBefore(periodoActivo.getFechaInicio())) {
+                throw new RuntimeException("La fecha de reserva no puede ser anterior a la fecha de inicio del periodo (" +
+                        periodoActivo.getFechaInicio() + ")");
+            }
+
+            // Establecer el día automáticamente basado en la fecha de reserva
+            try {
+                String diaEnIngles = updatedReserva.getFechaReserva().getDayOfWeek().name();
+                String diaEnEspanol;
+
+                switch (diaEnIngles) {
+                    case "MONDAY":
+                        diaEnEspanol = "LUNES";
+                        break;
+                    case "TUESDAY":
+                        diaEnEspanol = "MARTES";
+                        break;
+                    case "WEDNESDAY":
+                        diaEnEspanol = "MIERCOLES";
+                        break;
+                    case "THURSDAY":
+                        diaEnEspanol = "JUEVES";
+                        break;
+                    case "FRIDAY":
+                        diaEnEspanol = "VIERNES";
+                        break;
+                    case "SATURDAY":
+                        diaEnEspanol = "SABADO";
+                        break;
+                    case "SUNDAY":
+                        diaEnEspanol = "DOMINGO";
+                        break;
+                    default:
+                        throw new RuntimeException("Día de la semana desconocido: " + diaEnIngles);
+                }
+
+                updatedReserva.setDia(DiaEnum.valueOf(diaEnEspanol));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Error al determinar el día de la semana para la fecha proporcionada.");
+            }
+
+            // Validar cantidad de participantes
+            if (updatedReserva.getCantidadParticipantes() < 1) {
+                throw new RuntimeException("La cantidad de participantes no puede ser menor que 1.");
+            }
+
+            if (updatedReserva.getLaboratorio() != null && updatedReserva.getLaboratorio().getIdLaboratorio() != null) {
+                Laboratorio laboratorio = laboratorioRepository.findById(updatedReserva.getLaboratorio().getIdLaboratorio())
+                        .orElseThrow(() -> new RuntimeException("Laboratorio no encontrado"));
+
+                // Validar que la cantidad de participantes no sea mayor que la capacidad del laboratorio
+                if (updatedReserva.getCantidadParticipantes() > laboratorio.getCapacidad()) {
+                    throw new RuntimeException("La cantidad de participantes no puede ser mayor que la capacidad del laboratorio (" + laboratorio.getCapacidad() + ").");
+                }
+                updatedReserva.setLaboratorio(laboratorio);
+            }
+
             long diffHours = ChronoUnit.HOURS.between(updatedReserva.getHoraInicio(), updatedReserva.getHoraFin());
             if (diffHours != 1) {
                 throw new RuntimeException("La reserva debe durar exactamente 1 hora.");
             }
-            reserva.setHoraInicio(updatedReserva.getHoraInicio());
-            reserva.setHoraFin(updatedReserva.getHoraFin());
-            reserva.setMotivoReserva(updatedReserva.getMotivoReserva());
-            reserva.setCantidadParticipantes(updatedReserva.getCantidadParticipantes());
-            reserva.setRequerimientosTecnicos(updatedReserva.getRequerimientosTecnicos());
-            reserva.setEstado(updatedReserva.getEstado());
 
-            return reservaRepository.save(reserva);
+            if ("docente".equals(usuario.getRol().getNombre())) {
+                updatedReserva.setEstado(Reserva.EstadoReserva.PENDIENTE);
+            }
+
+            updatedReserva.setTipoEnum(TipoEnum.RESERVA);
+            updatedReserva.setNombreCompleto(usuario.getNombre() + " " + usuario.getApellido());
+            updatedReserva.setCorreo(usuario.getCorreo());
+            updatedReserva.setPeriodo(periodoActivo);
+
+            Reserva reservaActualizada = reservaRepository.save(updatedReserva);
+
+            if (administradorRepository.count() > 0) {
+                mailService.enviarCorreoReserva(reservaActualizada, usuario);
+            } else {
+                log.warn("No se envió el correo de reserva porque no hay administradores registrados.");
+            }
+
+            return reservaActualizada;
+
         }).orElseThrow(() -> new RuntimeException("Reserva no encontrada con ID: " + idReserva));
     }
 
 
     // Eliminar una reserva por ID
-    public void deleteReserva(Long idReserva) {
-        if (!reservaRepository.existsById(idReserva)) {
-            throw new RuntimeException("Reserva no encontrada con ID: " + idReserva);
+    public void deleteReserva(Long idReserva, Usuario usuario) {
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada con ID: " + idReserva));
+
+        // Validar si el usuario es admin o el dueño de la reserva
+        boolean esAdmin = "admin".equals(usuario.getRol().getNombre());
+        boolean esDueño = reserva.getCorreo().equals(usuario.getCorreo());
+
+        if (!esAdmin && !esDueño) {
+            throw new RuntimeException("No tienes permiso para eliminar esta reserva.");
         }
+
+        // Solo los administradores pueden eliminar reservas aprobadas
+        if (!esAdmin && reserva.getEstado() == Reserva.EstadoReserva.APROBADA) {
+            throw new RuntimeException("No se puede eliminar una reserva que ya ha sido aprobada.");
+        }
+
+        // Validar que la reserva pertenezca al periodo activo
+        Periodo periodoActivo = periodoRepository.findByEstadoTrue()
+                .orElseThrow(() -> new RuntimeException("No hay un período activo."));
+
+        if (!reserva.getPeriodo().getIdPeriodo().equals(periodoActivo.getIdPeriodo())) {
+            throw new RuntimeException("Solo se pueden eliminar reservas del periodo activo.");
+        }
+
         reservaRepository.deleteById(idReserva);
     }
 }

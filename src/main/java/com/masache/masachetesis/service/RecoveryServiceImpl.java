@@ -25,10 +25,8 @@ public class RecoveryServiceImpl {
     private final PasswordRecoveryRepository recoveryRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
-
-    private int otpExpirationMinutes = 5;
-
     private static final Random RANDOM_GENERATOR = new Random();
+    private int otpExpirationMinutes = 5;
 
     public JsonResponseDto generateRecoveryCode(String correo) {
         try {
@@ -37,34 +35,26 @@ public class RecoveryServiceImpl {
             if (user == null) {
                 return new JsonResponseDto(false, HttpStatus.NOT_FOUND.value(), "Usuario no encontrado.", null,null);
             }
-
-            // Desactivar códigos anteriores
             user.getPasswordRecoveries().forEach(r -> r.setIsActive(false));
-
             String recoveryCode = String.format("%06d", RANDOM_GENERATOR.nextInt(999999));
             String encryptedRecoveryCode = passwordEncoder.encode(recoveryCode);
             LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(otpExpirationMinutes);
-
             PasswordRecovery newRecovery = PasswordRecovery.builder()
                     .user(user)
                     .recoveryCode(encryptedRecoveryCode)
                     .recoveryExpirationDate(expirationDate)
                     .isActive(true)
                     .build();
-
             user.getPasswordRecoveries().add(newRecovery);
             recoveryRepository.save(newRecovery);
             mailService.sendRecoveryEmail(user, recoveryCode);
-
             return new JsonResponseDto(true,HttpStatus.OK.value(), "Código de recuperación generado con éxito.",
                     new RecoveryCodeResponseDto(recoveryCode, expirationDate), null);
-
         } catch (Exception e) {
             e.printStackTrace();
             log.error("Error al generar el código de recuperación: {}", e.getMessage());
             return new JsonResponseDto(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error interno del servidor.", null, null);
         }
-
     }
 
     public JsonResponseDto verifyRecoveryCode(String correo, String code) {

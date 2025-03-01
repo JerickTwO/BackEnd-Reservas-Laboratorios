@@ -10,9 +10,11 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -50,31 +52,35 @@ public class Reserva {
     @Column(nullable = false)
     private LocalTime horaFin;
 
+    @Column(nullable = false)
+    private LocalDate fechaReserva;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DiaEnum dia;
 
     @Column(nullable = false)
-    private String motivoReserva; // Motivo de la reserva
+    private String motivoReserva;
 
     @Column(nullable = false)
     @Min(1)
     @Max(35)
-    private Integer cantidadParticipantes; // Cantidad de participantes
+    private Integer cantidadParticipantes;
 
     @Column
-    private String requerimientosTecnicos; // Requerimientos técnicos (opcional)
+    private String requerimientosTecnicos;
 
-    @Enumerated(EnumType.STRING) // Almacenar como texto en la base de datos
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private EstadoReserva estado; // Estado de la reserva
+    private EstadoReserva estado;
 
     public enum EstadoReserva {
-        PENDIENTE, // La reserva está pendiente de aprobación
-        APROBADA,  // La reserva ha sido aceptada
-        RECHAZADA  // La reserva ha sido rechazada
+        PENDIENTE,
+        APROBADA,
+        RECHAZADA
     }
-    @Enumerated(EnumType.STRING) // Se almacena como texto en la BD
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo", columnDefinition = "VARCHAR(255) DEFAULT 'RESERVA'")
     private TipoEnum tipoEnum;
 
@@ -82,13 +88,12 @@ public class Reserva {
     @JoinColumn(name = "id_periodo", nullable = false)
     private Periodo periodo;
 
-    // Fechas de creación y actualización
     @CreationTimestamp
     @Column(name = "creacion", updatable = false)
-    private LocalDateTime fechaCreacion; // Fecha de creación
+    private LocalDateTime fechaCreacion;
 
     @UpdateTimestamp
     @Column(name = "actualizacion")
-    private LocalDateTime fechaActualizacion; // Fecha de última actualización
+    private LocalDateTime fechaActualizacion;
 
 }
