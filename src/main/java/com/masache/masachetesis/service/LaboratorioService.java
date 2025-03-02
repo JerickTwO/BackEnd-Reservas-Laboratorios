@@ -28,12 +28,7 @@ public class LaboratorioService {
         validarLaboratorio(laboratorio);
 
         // Asignar franjas horarias predeterminadas si no se proporcionan
-        if (laboratorio.getFranjasHorario() == null || laboratorio.getFranjasHorario().isEmpty()) {
-            laboratorio.setFranjasHorario(List.of("07:00-08:00", "08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00"));
-        }
-        if (laboratorio.getDiasHorario() == null || laboratorio.getDiasHorario().isEmpty()) {
-            laboratorio.setDiasHorario(List.of("LUNES", "MARTES", "MIERCOLES", "JUEVES","VIERNES"));
-        }
+
 
         if (laboratorio.getIdLaboratorio() == null || laboratorio.getIdLaboratorio() <= 0) {
             // Creación de un nuevo laboratorio

@@ -12,6 +12,7 @@ import java.util.List;
 
 @Repository
 public interface HorarioRepository extends JpaRepository<Horario, Long> {
-    @Query("SELECT h FROM Horario h WHERE h.reserva.estado = 'APROBADA'")
-    List<Horario> findHorariosConReservaAprobada();
+    @Query("SELECT COUNT(h) > 0 FROM Horario h WHERE :franja MEMBER OF h.franjasHorario AND :dia MEMBER OF h.diasHorario")
+    boolean existsByFranjaAndDia(@Param("franja") String franja, @Param("dia") String dia);
+
 }

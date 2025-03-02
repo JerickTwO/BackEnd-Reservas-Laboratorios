@@ -16,8 +16,13 @@ public class Horario {
     @Column(name = "id_horario", unique = true, nullable = false)
     private Long idHorario;
 
-    @ManyToOne
-    @JoinColumn(name = "id_reserva")
-    private Reserva reserva;
+    @ElementCollection
+    @CollectionTable(name = "franjas_horario", joinColumns = @JoinColumn(name = "id_horario"))
+    @Column(name = "franja")
+    private List<String> franjasHorario;
 
+    @ElementCollection
+    @CollectionTable(name = "dias_horario", joinColumns = @JoinColumn(name = "id_horario"))
+    @Column(name = "dia")
+    private List<String> diasHorario;
 }

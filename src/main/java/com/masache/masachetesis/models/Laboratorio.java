@@ -31,17 +31,6 @@ public class Laboratorio {
     @Min(value = 1, message = "La capacidad del laboratorio debe ser un número positivo.")
     @Column(nullable = false)
     private Integer capacidad;
-
-    @ElementCollection
-    @CollectionTable(name = "franjas_horario", joinColumns = @JoinColumn(name = "id_laboratorio"))
-    @Column(name = "franja")
-    private List<String> franjasHorario;
-
-    @ElementCollection
-    @CollectionTable(name = "dias_horario", joinColumns = @JoinColumn(name = "id_laboratorio"))
-    @Column(name = "dia")
-    private List<String> diasHorario;
-
     public Laboratorio() {
 
     }
