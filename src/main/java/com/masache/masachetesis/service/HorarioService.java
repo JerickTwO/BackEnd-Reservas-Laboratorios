@@ -66,7 +66,7 @@ public class HorarioService {
         }
 
         if (!actualizado) {
-            return new JsonResponseDto(false, HttpStatus.BAD_REQUEST.value(), "No se realizaron cambios en el horario", horarioExistente,null);
+            return new JsonResponseDto(false, HttpStatus.BAD_REQUEST.value(), "No se realizaron cambios en el horario", horarioActualizado,null);
         }
 
         try {
