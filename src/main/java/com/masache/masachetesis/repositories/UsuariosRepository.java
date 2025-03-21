@@ -14,7 +14,8 @@ public interface UsuariosRepository extends JpaRepository<Usuario, Long>{
     List<Usuario> findUsuariosByEstadoTrue();
     Usuario findByCorreoAndEstadoTrue(String correo);
     @Query("SELECT u FROM Usuario u WHERE LOWER(u.correo) = LOWER(:correo) AND u.estado = true")
-    Usuario buscarPorCorreoYEstado(@Param("correo") String correo);    boolean existsByUsuario(String usuario);
+    Usuario buscarPorCorreoYEstado(@Param("correo") String correo);
+    boolean existsByUsuario(String usuario);
     boolean existsByUsuarioAndEstadoTrue(String usuario);
     Usuario findByUsuarioAndAndEstadoIsTrue(String username);
 }
