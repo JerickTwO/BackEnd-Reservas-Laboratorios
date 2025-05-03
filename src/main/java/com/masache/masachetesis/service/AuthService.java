@@ -46,11 +46,9 @@ public class AuthService {
             if (username.isEmpty() || pass.isEmpty()) {
                 return new JsonResponseDto(false, HttpStatus.BAD_REQUEST.value(), "Usuario y contraseña son requeridos.", null, null);
             }
-
-            // Search for the user in the database
-            Usuario user = userRepository.findUsuarioByUsuarioAndEstadoTrue(username);
+            Usuario user = userRepository.buscarPorCorreoYEstado(username);
             if (user == null) {
-                return new JsonResponseDto(false, HttpStatus.BAD_REQUEST.value(), "Usuario no encontrado.", null, null);
+                return new JsonResponseDto(false, HttpStatus.BAD_REQUEST.value(), "Usuario no encontrado" , null, null);
             }
 
             // Check if the password matches
