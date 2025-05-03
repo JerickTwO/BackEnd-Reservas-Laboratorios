@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reserva de Laboratorios</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #0d1117;
+        color: white;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 900px;
+        margin: auto;
+        background: #161b22;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: #1c2128;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #30363d;
+      }
+      th {
+        background-color: #21262d;
+      }
+      select {
+        width: 100%;
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        cursor: pointer;
+        background: #0d1117;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>LABORATORIO 1 - PERIODO RETFDS</h2>
+      <table>
+        <tr>
+          <th>HORAS</th>
+          <th>LUNES</th>
+          <th>MARTES</th>
+          <th>MIÉRCOLES</th>
+          <th>JUEVES</th>
+          <th>VIERNES</th>
+        </tr>
+        <tbody id="tabla-horarios"></tbody>
+      </table>
+    </div>
+
+    <script>
+      function generarHoras(inicio) {
+        let horas = [];
+        let [hora, minuto] = inicio.split(":").map(Number);
+        for (let i = 0; i < 8; i++) {
+          let inicioHora = `${hora.toString().padStart(2, "0")}:${minuto
+            .toString()
+            .padStart(2, "0")}`;
+          let finHora = `${(hora + 1).toString().padStart(2, "0")}:${minuto
+            .toString()
+            .padStart(2, "0")}`;
+          horas.push(`${inicioHora}-${finHora}`);
+          hora++;
+        }
+        return horas;
+      }
+
+      function actualizarTabla() {
+        let inicio = document.getElementById("hora-inicio").value;
+        let horas = generarHoras(inicio);
+        let tabla = document.getElementById("tabla-horarios");
+        tabla.innerHTML = "";
+
+        horas.forEach((hora) => {
+          let fila = `<tr>
+                    <td>${hora}</td>
+                    <td>Disponible</td>
+                    <td>Disponible</td>
+                    <td>Disponible</td>
+                    <td>Disponible</td>
+                    <td>Disponible</td>
+                </tr>`;
+          tabla.innerHTML += fila;
+        });
+      }
+    </script>
+
+    <div style="text-align: center; margin-top: 20px">
+      <label for="hora-inicio">Hora de inicio: </label>
+      <select id="hora-inicio" onchange="actualizarTabla()">
+        <option value="07:00">07:00</option>
+        <option value="08:00" selected>08:00</option>
+        <option value="09:00">09:00</option>
+        <option value="10:00">10:00</option>
+      </select>
+    </div>
+
+    <script>
+      actualizarTabla();
+    </script>
+  </body>
+</html>
